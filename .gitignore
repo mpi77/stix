@@ -1,0 +1,6 @@
+/bin
+/STIXDB/*
+derby.log
+.*
+*~
+!.gitignore
