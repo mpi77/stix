@@ -1,6 +1,7 @@
 /bin
 /STIXDB/*
 derby.log
+bcpp_data.csv
 .*
 *~
 !.gitignore
