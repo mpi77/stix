@@ -2,8 +2,14 @@ package model;
 
 import java.sql.Date;
 
+/**
+ * Item POJO object.
+ * 
+ * @author MPI
+ * @version 18.04.2014/1.1
+ */
 public class Item {
-	
+
 	public static final String DB_MAP_ID = "id";
 	public static final String DB_MAP_NAME = "name";
 	public static final String DB_MAP_DATE = "date";
@@ -13,6 +19,7 @@ public class Item {
 	public static final String DB_MAP_MIN = "min_value";
 	public static final String DB_MAP_VOLUME = "volume";
 	
+	private Integer id;
 	private String name;
 	private Date date;
 	private Double open;
@@ -22,6 +29,7 @@ public class Item {
 	private Long volume;
 	
 	public Item(){
+		this.id = null;
 		this.name = null;
 		this.date = null;
 		this.open = null;
@@ -31,9 +39,9 @@ public class Item {
 		this.volume = null;
 	}
 
-	public Item(String name, Date date, Double open, Double close, Double max,
+	public Item(Integer id, String name, Date date, Double open, Double close, Double max,
 			Double min, Long volume) {
-		super();
+		this.id = id;
 		this.name = name;
 		this.date = date;
 		this.open = open;
@@ -41,6 +49,14 @@ public class Item {
 		this.max = max;
 		this.min = min;
 		this.volume = volume;
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+	
+	public void setId(Integer id){
+		this.id = id;
 	}
 
 	public String getName() {
@@ -97,5 +113,12 @@ public class Item {
 
 	public void setVolume(Long volume) {
 		this.volume = volume;
+	}
+	
+	@Override
+	public String toString() {
+		return "Item [id=" + id + ", name=" + name + ", date=" + date
+				+ ", open=" + open + ", close=" + close + ", max=" + max
+				+ ", min=" + min + ", volume=" + volume + "]";
 	}
 }

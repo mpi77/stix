@@ -10,8 +10,8 @@ import java.sql.Statement;
 import java.util.Properties;
 
 /**
- * @author MPi
- * @version 18.04.2014/1.0
+ * @author MPI
+ * @version 18.04.2014/1.1
  */
 public class Database {
 
@@ -70,9 +70,9 @@ public class Database {
 		return r;
 	}
 
-	synchronized public int actionQuery(PreparedStatement ps,
+	synchronized public Integer actionQuery(PreparedStatement ps,
 			boolean returnGeneratedKey) throws SQLException {
-		int r = 0;
+		Integer r = null;
 		ps.executeUpdate();
 		conn.commit();
 		if (returnGeneratedKey) {
@@ -103,7 +103,7 @@ public class Database {
 				Database.DB_MAP_SPAD_TABLE, null);) {
 			if (!rs.next()) {
 				initTables();
-				System.out.print("create table");
+				//System.out.println("create table");
 			}
 		}
 	}
