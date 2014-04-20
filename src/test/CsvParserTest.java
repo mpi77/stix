@@ -2,6 +2,8 @@ package test;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import model.CsvParser;
@@ -12,11 +14,15 @@ public class CsvParserTest {
 	public static void main(String[] args) {
 		IParser p = new CsvParser();
 		try {
-			ArrayList<Item> r = p.parseSPAD("bcpp_data.csv", new Date(System.currentTimeMillis() - 2000000000));
+			SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+			java.util.Date parsed = (java.util.Date) format.parse("20140320");
+			java.sql.Date minDate = new java.sql.Date(parsed.getTime());
+			
+			ArrayList<Item> r = p.parseSPAD("bcpp_data.csv", minDate);
 			for(int i = 0; i< r.size(); i++){
 				System.out.println(r.get(i).toString());
 			}
-		} catch (IOException e) {
+		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 		}
 	}
