@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import model.Database;
+import model.DerbyDatabase;
 import model.Item;
 
 /**
@@ -18,11 +18,11 @@ public class DerbyTest {
 
 	public static void main(String[] args) {
 		try {
-			Database db = new Database();
+			DerbyDatabase db = new DerbyDatabase();
 			// insert
 			String isql = String
 					.format("INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s) VALUES (?,?,?,?,?,?,?)",
-							Database.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
+							DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
 							Item.DB_MAP_DATE, Item.DB_MAP_OPEN,
 							Item.DB_MAP_CLOSE, Item.DB_MAP_MAX,
 							Item.DB_MAP_MIN, Item.DB_MAP_VOLUME);
@@ -40,7 +40,7 @@ public class DerbyTest {
 			}
 			// update
 			String usql = String.format("UPDATE %s SET %s=? WHERE %s=?",
-					Database.DB_MAP_SPAD_TABLE, Item.DB_MAP_DATE,
+					DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_DATE,
 					Item.DB_MAP_ID);
 			try (PreparedStatement upd = db.getConnection().prepareStatement(
 					usql)) {
@@ -51,7 +51,7 @@ public class DerbyTest {
 			}
 			// select
 			String ssql = String.format("SELECT * FROM %s",
-					Database.DB_MAP_SPAD_TABLE);
+					DerbyDatabase.DB_MAP_SPAD_TABLE);
 			try (PreparedStatement ins = db.getConnection().prepareStatement(
 					ssql)) {
 				ArrayList<Item> a = new ArrayList<Item>();

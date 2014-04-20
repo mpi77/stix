@@ -13,7 +13,7 @@ import java.util.Properties;
  * @author MPI
  * @version 18.04.2014/1.1
  */
-public class Database {
+public class DerbyDatabase {
 
 	public static final String DERBY_EMBEDDED_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 	public static final String DERBY_PROTOCOL = "jdbc:derby:";
@@ -29,17 +29,17 @@ public class Database {
 	private String dbPassword;
 	private Connection conn;
 
-	public Database() throws ClassNotFoundException, SQLException {
-		this.driver = Database.DERBY_EMBEDDED_DRIVER;
-		this.protocol = Database.DERBY_PROTOCOL;
-		this.dbUser = Database.DERBY_DEFAULT_USER;
-		this.dbPassword = Database.DERBY_DEFAULT_PASS;
-		this.schema = Database.DERBY_SCHEMA;
+	public DerbyDatabase() throws ClassNotFoundException, SQLException {
+		this.driver = DerbyDatabase.DERBY_EMBEDDED_DRIVER;
+		this.protocol = DerbyDatabase.DERBY_PROTOCOL;
+		this.dbUser = DerbyDatabase.DERBY_DEFAULT_USER;
+		this.dbPassword = DerbyDatabase.DERBY_DEFAULT_PASS;
+		this.schema = DerbyDatabase.DERBY_SCHEMA;
 
 		connect();
 	}
 
-	public Database(String driver, String protocol, String dbUser,
+	public DerbyDatabase(String driver, String protocol, String dbUser,
 			String dbPassword, String schema) throws ClassNotFoundException,
 			SQLException {
 		this.driver = driver;
@@ -100,7 +100,7 @@ public class Database {
 
 		DatabaseMetaData dbmd = conn.getMetaData();
 		try (ResultSet rs = dbmd.getTables(null, null,
-				Database.DB_MAP_SPAD_TABLE, null);) {
+				DerbyDatabase.DB_MAP_SPAD_TABLE, null);) {
 			if (!rs.next()) {
 				initTables();
 				//System.out.println("create table");
@@ -122,7 +122,7 @@ public class Database {
 							+ "%s VARCHAR(10) NOT NULL, %s DATE NOT NULL, %s DOUBLE NOT NULL, "
 							+ "%s DOUBLE NOT NULL, %s DOUBLE NOT NULL, %s DOUBLE NOT NULL, "
 							+ "%s BIGINT NOT NULL)",
-							Database.DB_MAP_SPAD_TABLE, Item.DB_MAP_ID,
+							DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_ID,
 							Item.DB_MAP_NAME, Item.DB_MAP_DATE,
 							Item.DB_MAP_OPEN, Item.DB_MAP_CLOSE,
 							Item.DB_MAP_MAX, Item.DB_MAP_MIN,

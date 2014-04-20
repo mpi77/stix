@@ -10,10 +10,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+/**
+ * @author MPI
+ * @version 20.04.2014/1.1
+ */
 public class CsvParser implements IParser {
 
 	@Override
-	public ArrayList<Item> parseSPAD(String filename, Date minimalDate)
+	public ArrayList<Item> parseSpad(String filename, Date minimalDate)
 			throws IOException {
 		ArrayList<Item> r = null;
 		File f = new File(filename);
@@ -23,7 +27,7 @@ public class CsvParser implements IParser {
 		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 			String line;
 			r = new ArrayList<Item>();
-			System.out.println(minimalDate.toString());
+			//System.out.println(minimalDate.toString());
 			while ((line = br.readLine()) != null) {
 				String[] cols = line.split(",");
 				java.sql.Date itemDate;
