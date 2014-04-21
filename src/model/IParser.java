@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 /**
  * @author MPI
- * @version 20.04.2014/1.0
+ * @version 21.04.2014/1.1
  */
 public interface IParser {
-	public ArrayList<Item> parseSpad(String filename, Date minimalDate) throws IOException;
+	public ArrayList<Item> parseSpad(String filePath, Date minimalDate) throws IOException;
 }

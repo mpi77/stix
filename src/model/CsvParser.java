@@ -12,19 +12,19 @@ import java.util.ArrayList;
 
 /**
  * @author MPI
- * @version 20.04.2014/1.1
+ * @version 21.04.2014/1.2
  */
 public class CsvParser implements IParser {
 
 	@Override
-	public ArrayList<Item> parseSpad(String filename, Date minimalDate)
+	public ArrayList<Item> parseSpad(String filePath, Date minimalDate)
 			throws IOException {
 		ArrayList<Item> r = null;
-		File f = new File(filename);
+		File f = new File(filePath);
 		if (!f.isFile()) {
 			throw new FileNotFoundException();
 		}
-		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
 			String line;
 			r = new ArrayList<Item>();
 			//System.out.println(minimalDate.toString());

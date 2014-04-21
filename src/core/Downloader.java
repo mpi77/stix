@@ -8,11 +8,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
-import model.CsvParser;
 import model.IDataStrategy;
 import model.IParser;
 import model.Item;
@@ -30,6 +28,7 @@ public class Downloader implements Runnable {
 	private IParser ps;
 	private String remoteFile;
 	private String localFile;
+	private String workingDir = System.getProperty("user.dir");
 
 	public Downloader(IDataStrategy ds, IParser ps, String remoteFile, String localFile) {
 		this.ds = ds;
@@ -45,8 +44,15 @@ public class Downloader implements Runnable {
 			download();
 			// get max date in db
 			Date lastDate = ds.getSpadLastDate();
+			if(lastDate != null){
+				// need to increment date
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(lastDate);
+				cal.add(Calendar.DATE, 1);
+				lastDate = new Date(cal.getTimeInMillis());
+			}
 			// parse downloaded file, get items with newer date than max date
-			ArrayList<Item> r = ps.parseSpad(localFile, lastDate);
+			ArrayList<Item> r = ps.parseSpad(String.format("%s/%s", workingDir, localFile), lastDate);
 			// save parsed items to db
 			ds.insertItems(r);
 			//System.out.println("DW success");
@@ -62,7 +68,7 @@ public class Downloader implements Runnable {
 
 		url = new URL(remoteFile);
 		con = url.openConnection();
-		File file = new File(localFile);
+		File file = new File(String.format("%s/%s", workingDir, localFile));
 		
 		try (BufferedInputStream bis = new BufferedInputStream(
 				con.getInputStream());
