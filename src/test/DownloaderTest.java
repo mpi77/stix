@@ -17,7 +17,7 @@ public class DownloaderTest {
 
 	public static void main(String[] args) {
 		String workingDir = System.getProperty("user.dir");
-		System.out.println("Current working directory : " + workingDir);
+		System.out.println("current working directory : " + workingDir);
 		   
 		IDataStrategy ds;
 		IParser ps;
