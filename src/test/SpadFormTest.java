@@ -7,12 +7,13 @@ import model.DerbyDatabase;
 import model.DerbyStrategy;
 import model.IDataStrategy;
 import model.Item;
+import model.SpadItem;
 import view.SpadForm;
 import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 21.04.2014/1.0
+ * @version 04.05.2014/1.1
  */
 public class SpadFormTest {
 
@@ -20,7 +21,7 @@ public class SpadFormTest {
 		IDataStrategy ds;
 		try {
 			ds = new DerbyStrategy(new DerbyDatabase());
-			ArrayList<Item> data = ds.getItems(null, null);
+			ArrayList<SpadItem> data = ds.getSpadItems(null, null);
 			SpadTableModel model = new SpadTableModel(SpadForm.columnNames, data);
 			SpadForm form = new SpadForm(model);
 		} catch (ClassNotFoundException | SQLException e) {

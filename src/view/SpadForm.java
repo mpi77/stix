@@ -14,12 +14,12 @@ import javax.swing.table.JTableHeader;
 
 /**
  * @author MPI
- * @version 21.04.2014/1.0
+ * @version 04.05.2014/1.1
  */
 public class SpadForm extends JFrame {
 
-	public static final String[] columnNames = { "Id", "Name", "Date", "Open",
-			"Close", "Max", "Min", "Volume" };
+	public static final String[] columnNames = { "Id", "avPrice", "avVolume", "dPriceMin",
+			"dPriceMax", "dPriceAvg"};
 
 	private JFrame frame;
 	private JTable table;

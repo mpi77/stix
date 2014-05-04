@@ -2,12 +2,12 @@ package model;
 
 /**
  * @author MPI
- * @version 04.05.2014/1.0
+ * @version 04.05.2014/1.1
  */
 public class SpadItem {
 	private String companyId;
 	private Double avPrice;
-	private Double avVolume;
+	private Long avVolume;
 	private Double dPriceMin;
 	private Double dPriceMax;
 	private Double dPriceAvg;
@@ -27,7 +27,7 @@ public class SpadItem {
 		this.dPriceAvg = null;
 	}
 
-	public SpadItem(String companyId, Double avPrice, Double avVolume,
+	public SpadItem(String companyId, Double avPrice, Long avVolume,
 			Double dPriceMin, Double dPriceMax, Double dPriceAvg) {
 		super();
 		this.companyId = companyId;
@@ -54,11 +54,11 @@ public class SpadItem {
 		this.avPrice = avPrice;
 	}
 
-	public Double getAvVolume() {
+	public Long getAvVolume() {
 		return avVolume;
 	}
 
-	public void setAvVolume(Double avVolume) {
+	public void setAvVolume(Long avVolume) {
 		this.avVolume = avVolume;
 	}
 
