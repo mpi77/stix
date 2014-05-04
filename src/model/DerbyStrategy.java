@@ -11,7 +11,7 @@ import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 21.04.2014/1.3
+ * @version 04.05.2014/1.4
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -39,7 +39,7 @@ public class DerbyStrategy implements IDataStrategy {
 	}
 
 	@Override
-	public ArrayList<Item> getSpadItems(Date startDate, Date endDate) {
+	public ArrayList<Item> getItems(Date startDate, Date endDate) {
 		ArrayList<Item> r = new ArrayList<Item>();
 		// TODO: startDate, endDate conditions
 		String ssql = String.format("SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM %s",
@@ -90,6 +90,12 @@ public class DerbyStrategy implements IDataStrategy {
 		for (int i = 0; i < items.size(); i++) {
 			insertItem(items.get(i));
 		}
+	}
+
+	@Override
+	public ArrayList<SpadItem> getSpadItems(Date startDate, Date endDate) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

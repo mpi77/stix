@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * @author MPI
+ * @version 04.05.2014/1.0
+ */
 public class SpadItem {
 	private String companyId;
 	private Double avPrice;

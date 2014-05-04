@@ -20,7 +20,7 @@ public class SpadFormTest {
 		IDataStrategy ds;
 		try {
 			ds = new DerbyStrategy(new DerbyDatabase());
-			ArrayList<Item> data = ds.getSpadItems(null, null);
+			ArrayList<Item> data = ds.getItems(null, null);
 			SpadTableModel model = new SpadTableModel(SpadForm.columnNames, data);
 			SpadForm form = new SpadForm(model);
 		} catch (ClassNotFoundException | SQLException e) {
