@@ -21,7 +21,7 @@ public class DerbyStrategy implements IDataStrategy {
 	public DerbyStrategy(DerbyDatabase db) {
 		this.db = db;
 	}
-	
+
 	@Override
 	public Date getSpadFirstDate() throws SQLException {
 		Date firstDate = null;
@@ -53,7 +53,8 @@ public class DerbyStrategy implements IDataStrategy {
 	}
 
 	@Override
-	public ArrayList<Item> getItems(Date startDate, Date endDate) throws SQLException {
+	public ArrayList<Item> getItems(Date startDate, Date endDate)
+			throws SQLException {
 		ArrayList<Item> r = new ArrayList<Item>();
 		// TODO: startDate, endDate conditions
 		String ssql = String.format("SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM %s",
@@ -102,18 +103,20 @@ public class DerbyStrategy implements IDataStrategy {
 	}
 
 	@Override
-	public ArrayList<SpadItem> getSpadItems(Date startDate, Date endDate) throws SQLException {
+	public ArrayList<SpadItem> getSpadItems(Date startDate, Date endDate)
+			throws SQLException {
 		ArrayList<SpadItem> r = new ArrayList<SpadItem>();
-		if(startDate == null){
+		if (startDate == null) {
 			startDate = this.getSpadFirstDate();
 		}
-		if(endDate == null){
+		if (endDate == null) {
 			endDate = this.getSpadLastDate();
 		}
+		// TODO: fetch company.name
 		String ssql = String
-				.format("SELECT company.name, AVG(spad.close_value), AVG(spad.volume), MIN(spad.close_value), "
+				.format("SELECT spad.name, AVG(spad.close_value), AVG(spad.volume), MIN(spad.close_value), "
 						+ "MAX(spad.close_value), AVG(spad.close_value) FROM %s "
-						+ "INNER JOIN company ON spad.name=company.id WHERE (spad.date >= ? AND spad.date <= ?) GROUP BY company.name",
+						+ "INNER JOIN company ON spad.name=company.id WHERE (spad.date >= ? AND spad.date <= ?) GROUP BY spad.name",
 						DerbyDatabase.DB_MAP_SPAD_TABLE);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
 			sel.setDate(1, startDate);
@@ -126,8 +129,27 @@ public class DerbyStrategy implements IDataStrategy {
 					r.add(a);
 				}
 			}
-		} 
-		// TODO: dPriceMin, dPriceMax, dPriceAvg
+		}
+		String rsql = String
+				.format("SELECT company.id,spad.close_value,spad.date FROM %s INNER JOIN company ON spad.name=company.id  WHERE (company.id = ? AND spad.date >= ? AND spad.date <= ?) ORDER BY spad.date DESC FETCH FIRST 1 ROWS ONLY",
+						DerbyDatabase.DB_MAP_SPAD_TABLE);
+		System.out.println(rsql);
+		for (int i = 0; i < r.size(); i++) {
+			try (PreparedStatement sel = db.getConnection().prepareStatement(
+					rsql)) {
+				sel.setString(1, r.get(i).getCompanyId());
+				sel.setDate(2, startDate);
+				sel.setDate(3, endDate);
+				try (ResultSet rs = db.selectQuery(sel)) {
+					while (rs.next()) {
+						//System.out.println(rs.getString(1) + " "+ rs.getDate(3) + " " + rs.getDouble(2));
+						r.get(i).setdPriceMin(rs.getDouble(2) - r.get(i).getdPriceMin());
+						r.get(i).setdPriceMax(rs.getDouble(2) - r.get(i).getdPriceMax());
+						r.get(i).setdPriceAvg(rs.getDouble(2) - r.get(i).getdPriceAvg());
+					}
+				}
+			}
+		}
 		return r;
 	}
 
