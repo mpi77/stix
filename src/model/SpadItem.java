@@ -1,6 +1,8 @@
 package model;
 
 /**
+ * SpadItem (data from datastrategy by company) POJO object.
+ * 
  * @author MPI
  * @version 04.05.2014/1.1
  */

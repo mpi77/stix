@@ -3,7 +3,7 @@ package model;
 import java.sql.Date;
 
 /**
- * Item POJO object.
+ * Item (raw data from bcpp) POJO object.
  * 
  * @author MPI
  * @version 18.04.2014/1.1
