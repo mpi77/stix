@@ -4,10 +4,11 @@ package model;
  * SpadItem (data from datastrategy by company) POJO object.
  * 
  * @author MPI
- * @version 04.05.2014/1.1
+ * @version 06.05.2014/1.2
  */
 public class SpadItem {
 	private String companyId;
+	private String companyName;
 	private Double avPrice;
 	private Long avVolume;
 	private Double dPriceMin;
@@ -20,8 +21,9 @@ public class SpadItem {
 	 * prumeru
 	 */
 
-	public SpadItem(String companyId) {
+	public SpadItem(String companyId, String companyName) {
 		this.companyId = companyId;
+		this.companyName = companyName;
 		this.avPrice = null;
 		this.avVolume = null;
 		this.dPriceMin = null;
@@ -29,10 +31,11 @@ public class SpadItem {
 		this.dPriceAvg = null;
 	}
 
-	public SpadItem(String companyId, Double avPrice, Long avVolume,
+	public SpadItem(String companyId, String companyName, Double avPrice, Long avVolume,
 			Double dPriceMin, Double dPriceMax, Double dPriceAvg) {
 		super();
 		this.companyId = companyId;
+		this.companyName = companyName;
 		this.avPrice = avPrice;
 		this.avVolume = avVolume;
 		this.dPriceMin = dPriceMin;
@@ -46,6 +49,14 @@ public class SpadItem {
 
 	public void setCompanyId(String companyId) {
 		this.companyId = companyId;
+	}
+	
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
 	}
 
 	public Double getAvPrice() {

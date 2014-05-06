@@ -18,7 +18,7 @@ import javax.swing.table.JTableHeader;
  */
 public class SpadForm extends JFrame {
 
-	public static final String[] columnNames = { "Id", "avPrice", "avVolume", "dPriceMin",
+	public static final String[] columnNames = { "Name", "avPrice", "avVolume", "dPriceMin",
 			"dPriceMax", "dPriceAvg"};
 
 	private JFrame frame;

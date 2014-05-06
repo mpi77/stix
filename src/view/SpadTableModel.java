@@ -63,7 +63,7 @@ public class SpadTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int column) {
 		switch (column) {
 		case SPAD_COLUMN_NAME:
-			return data.get(row).getCompanyId();
+			return data.get(row).getCompanyName();
 		case SPAD_COLUMN_AVPRICE:
 			return data.get(row).getAvPrice();
 		case SPAD_COLUMN_AVVOLUME:

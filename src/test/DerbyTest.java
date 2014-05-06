@@ -7,12 +7,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import model.Company;
 import model.DerbyDatabase;
 import model.Item;
 
 /**
  * @author MPI
- * @version 18.04.2014/1.1
+ * @version 06.05.2014/1.2
  */
 public class DerbyTest {
 
@@ -60,6 +61,18 @@ public class DerbyTest {
 						a.add(new Item(rs.getInt(1), rs.getString(2), rs
 								.getDate(3), rs.getDouble(4), rs.getDouble(5),
 								rs.getDouble(6), rs.getDouble(7), rs.getLong(8)));
+						System.out.println(a.get(a.size() - 1));
+					}
+				}
+			}
+			String csql = String.format("SELECT * FROM %s",
+					DerbyDatabase.DB_MAP_COMPANY_TABLE);
+			try (PreparedStatement comp = db.getConnection().prepareStatement(
+					csql)) {
+				ArrayList<Company> a = new ArrayList<Company>();
+				try (ResultSet rs = db.selectQuery(comp)) {
+					while (rs.next()) {
+						a.add(new Company(rs.getString(1), rs.getString(2)));
 						System.out.println(a.get(a.size() - 1));
 					}
 				}

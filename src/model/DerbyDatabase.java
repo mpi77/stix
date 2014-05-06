@@ -11,7 +11,7 @@ import java.util.Properties;
 
 /**
  * @author MPI
- * @version 18.04.2014/1.1
+ * @version 06.06.2014/1.2
  */
 public class DerbyDatabase {
 
@@ -21,6 +21,7 @@ public class DerbyDatabase {
 	public static final String DERBY_DEFAULT_PASS = "";
 	public static final String DERBY_SCHEMA = "STIXDB";
 	public static final String DB_MAP_SPAD_TABLE = "SPAD";
+	public static final String DB_MAP_COMPANY_TABLE = "COMPANY";
 
 	private String driver;
 	private String protocol;
@@ -103,7 +104,7 @@ public class DerbyDatabase {
 				DerbyDatabase.DB_MAP_SPAD_TABLE, null);) {
 			if (!rs.next()) {
 				initTables();
-				//System.out.println("create table");
+				// System.out.println("create table");
 			}
 		}
 	}
@@ -115,6 +116,12 @@ public class DerbyDatabase {
 	}
 
 	private void initTables() throws SQLException {
+		createSpad();
+		createCompany();
+		loadDefaultCompanies();
+	}
+
+	private void createSpad() throws SQLException {
 		try (Statement s = conn.createStatement()) {
 			String sql = String
 					.format("CREATE TABLE %s (%s INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY "
@@ -128,6 +135,69 @@ public class DerbyDatabase {
 							Item.DB_MAP_MAX, Item.DB_MAP_MIN,
 							Item.DB_MAP_VOLUME);
 			s.execute(sql);
+			conn.commit();
+		}
+	}
+
+	private void createCompany() throws SQLException {
+		try (Statement s = conn.createStatement()) {
+			String sql = String.format(
+					"CREATE TABLE %s (%s VARCHAR(10) NOT NULL CONSTRAINT ppk PRIMARY KEY,"
+							+ "%s VARCHAR(50) NOT NULL)",
+					DerbyDatabase.DB_MAP_COMPANY_TABLE, Company.DB_MAP_ID,
+					Company.DB_MAP_NAME);
+			s.execute(sql);
+			conn.commit();
+		}
+	}
+
+	private void loadDefaultCompanies() throws SQLException {
+		String sql = String.format("INSERT INTO %s (%s,%s) VALUES (?,?)",
+				DerbyDatabase.DB_MAP_COMPANY_TABLE, Company.DB_MAP_ID,
+				Company.DB_MAP_NAME);
+		try (PreparedStatement s = conn.prepareStatement(sql)) {
+			s.setString(1, "ERBAG");
+			s.setString(2, "ERBAGi");
+			s.execute();
+			s.setString(1, "VIG");
+			s.setString(2, "VIGi");
+			s.execute();
+			s.setString(1, "CETV");
+			s.setString(2, "CETVi");
+			s.execute();
+			s.setString(1, "TABAK");
+			s.setString(2, "TABAKi");
+			s.execute();
+			s.setString(1, "CEZ");
+			s.setString(2, "ČEZ");
+			s.execute();
+			s.setString(1, "KOMB");
+			s.setString(2, "KOMBi");
+			s.execute();
+			s.setString(1, "UNIPE");
+			s.setString(2, "UNIPEi");
+			s.execute();
+			s.setString(1, "TELEC");
+			s.setString(2, "TELECi");
+			s.execute();
+			s.setString(1, "NWRUK");
+			s.setString(2, "NWRUKi");
+			s.execute();
+			s.setString(1, "ORCO");
+			s.setString(2, "ORCOi");
+			s.execute();
+			s.setString(1, "PEGAS");
+			s.setString(2, "PEGASi");
+			s.execute();
+			s.setString(1, "AAA");
+			s.setString(2, "AAAi");
+			s.execute();
+			s.setString(1, "FOREG");
+			s.setString(2, "FOREGi");
+			s.execute();
+			s.setString(1, "TMR");
+			s.setString(2, "TMRi");
+			s.execute();	
 			conn.commit();
 		}
 	}

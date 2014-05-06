@@ -11,7 +11,7 @@ import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 04.05.2014/1.4
+ * @version 06.05.2014/1.5
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -61,17 +61,16 @@ public class DerbyStrategy implements IDataStrategy {
 		}
 		return r;
 	}
-	
+
 	@Override
 	public void insertItem(Item item) {
-		String isql = String
-				.format("INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s) VALUES (?,?,?,?,?,?,?)",
-						DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
-						Item.DB_MAP_DATE, Item.DB_MAP_OPEN,
-						Item.DB_MAP_CLOSE, Item.DB_MAP_MAX,
-						Item.DB_MAP_MIN, Item.DB_MAP_VOLUME);
-		try (PreparedStatement ins = db.getConnection().prepareStatement(
-				isql, Statement.NO_GENERATED_KEYS)) {
+		String isql = String.format(
+				"INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s) VALUES (?,?,?,?,?,?,?)",
+				DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
+				Item.DB_MAP_DATE, Item.DB_MAP_OPEN, Item.DB_MAP_CLOSE,
+				Item.DB_MAP_MAX, Item.DB_MAP_MIN, Item.DB_MAP_VOLUME);
+		try (PreparedStatement ins = db.getConnection().prepareStatement(isql,
+				Statement.NO_GENERATED_KEYS)) {
 			ins.setString(1, item.getName());
 			ins.setDate(2, item.getDate());
 			ins.setDouble(3, item.getOpen());
@@ -94,8 +93,24 @@ public class DerbyStrategy implements IDataStrategy {
 
 	@Override
 	public ArrayList<SpadItem> getSpadItems(Date startDate, Date endDate) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<SpadItem> r = new ArrayList<SpadItem>();
+		// TODO: startDate, endDate conditions
+		String ssql = String
+				.format("SELECT company.name,1,589652,3,4,5 FROM %s INNER JOIN company ON spad.name=company.id GROUP BY company.name",
+						DerbyDatabase.DB_MAP_SPAD_TABLE);
+		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
+			try (ResultSet rs = db.selectQuery(sel)) {
+				while (rs.next()) {
+					SpadItem a = new SpadItem(rs.getString(1), rs.getString(1),
+							rs.getDouble(2), rs.getLong(3), rs.getDouble(4),
+							rs.getDouble(5), rs.getDouble(6));
+					r.add(a);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return r;
 	}
 
 }
