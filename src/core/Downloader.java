@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -17,7 +18,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 21.04.2014/1.2
+ * @version 06.05.2014/1.3
  */
 public class Downloader implements Runnable {
 
@@ -56,7 +57,7 @@ public class Downloader implements Runnable {
 			// save parsed items to db
 			ds.insertItems(r);
 			//System.out.println("DW success");
-		} catch (IOException e) {
+		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 		}
 	}

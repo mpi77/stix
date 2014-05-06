@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import sun.security.action.GetLongAction;
 import view.SpadTableModel;
 
 /**
@@ -20,9 +21,24 @@ public class DerbyStrategy implements IDataStrategy {
 	public DerbyStrategy(DerbyDatabase db) {
 		this.db = db;
 	}
+	
+	@Override
+	public Date getSpadFirstDate() throws SQLException {
+		Date firstDate = null;
+		String ssql = String.format("SELECT MIN(%s) FROM %s", Item.DB_MAP_DATE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE);
+		try (PreparedStatement ins = db.getConnection().prepareStatement(ssql)) {
+			try (ResultSet rs = db.selectQuery(ins)) {
+				if (rs.next()) {
+					firstDate = rs.getDate(1);
+				}
+			}
+		}
+		return firstDate;
+	}
 
 	@Override
-	public Date getSpadLastDate() {
+	public Date getSpadLastDate() throws SQLException {
 		Date lastDate = null;
 		String ssql = String.format("SELECT MAX(%s) FROM %s", Item.DB_MAP_DATE,
 				DerbyDatabase.DB_MAP_SPAD_TABLE);
@@ -32,14 +48,12 @@ public class DerbyStrategy implements IDataStrategy {
 					lastDate = rs.getDate(1);
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 		return lastDate;
 	}
 
 	@Override
-	public ArrayList<Item> getItems(Date startDate, Date endDate) {
+	public ArrayList<Item> getItems(Date startDate, Date endDate) throws SQLException {
 		ArrayList<Item> r = new ArrayList<Item>();
 		// TODO: startDate, endDate conditions
 		String ssql = String.format("SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM %s",
@@ -56,14 +70,12 @@ public class DerbyStrategy implements IDataStrategy {
 					r.add(a);
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 		return r;
 	}
 
 	@Override
-	public void insertItem(Item item) {
+	public void insertItem(Item item) throws SQLException {
 		String isql = String.format(
 				"INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s) VALUES (?,?,?,?,?,?,?)",
 				DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
@@ -79,26 +91,33 @@ public class DerbyStrategy implements IDataStrategy {
 			ins.setDouble(6, item.getMin());
 			ins.setLong(7, item.getVolume());
 			Integer ia = db.actionQuery(ins, false);
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void insertItems(ArrayList<Item> items) {
+	public void insertItems(ArrayList<Item> items) throws SQLException {
 		for (int i = 0; i < items.size(); i++) {
 			insertItem(items.get(i));
 		}
 	}
 
 	@Override
-	public ArrayList<SpadItem> getSpadItems(Date startDate, Date endDate) {
+	public ArrayList<SpadItem> getSpadItems(Date startDate, Date endDate) throws SQLException {
 		ArrayList<SpadItem> r = new ArrayList<SpadItem>();
-		// TODO: startDate, endDate conditions
+		if(startDate == null){
+			startDate = this.getSpadFirstDate();
+		}
+		if(endDate == null){
+			endDate = this.getSpadLastDate();
+		}
 		String ssql = String
-				.format("SELECT company.name,1,589652,3,4,5 FROM %s INNER JOIN company ON spad.name=company.id GROUP BY company.name",
+				.format("SELECT company.name, AVG(spad.close_value), AVG(spad.volume), MIN(spad.close_value), "
+						+ "MAX(spad.close_value), AVG(spad.close_value) FROM %s "
+						+ "INNER JOIN company ON spad.name=company.id WHERE (spad.date >= ? AND spad.date <= ?) GROUP BY company.name",
 						DerbyDatabase.DB_MAP_SPAD_TABLE);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
+			sel.setDate(1, startDate);
+			sel.setDate(2, endDate);
 			try (ResultSet rs = db.selectQuery(sel)) {
 				while (rs.next()) {
 					SpadItem a = new SpadItem(rs.getString(1), rs.getString(1),
@@ -107,9 +126,8 @@ public class DerbyStrategy implements IDataStrategy {
 					r.add(a);
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		} 
+		// TODO: dPriceMin, dPriceMax, dPriceAvg
 		return r;
 	}
 

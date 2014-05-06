@@ -13,7 +13,7 @@ import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 04.05.2014/1.1
+ * @version 06.05.2014/1.2
  */
 public class SpadFormTest {
 
@@ -28,5 +28,4 @@ public class SpadFormTest {
 			e.printStackTrace();
 		}
 	}
-
 }
