@@ -112,11 +112,10 @@ public class DerbyStrategy implements IDataStrategy {
 		if (endDate == null) {
 			endDate = this.getSpadLastDate();
 		}
-		// TODO: fetch company.name
 		String ssql = String
-				.format("SELECT spad.name, AVG(spad.close_value), AVG(spad.volume), MIN(spad.close_value), "
-						+ "MAX(spad.close_value), AVG(spad.close_value) FROM %s "
-						+ "INNER JOIN company ON spad.name=company.id WHERE (spad.date >= ? AND spad.date <= ?) GROUP BY spad.name",
+				.format("SELECT company.id, AVG(spad.close_value), AVG(spad.volume), MIN(spad.close_value), "
+						+ "MAX(spad.close_value), AVG(spad.close_value) FROM %s,company "
+						+ "WHERE (spad.name=company.id AND spad.date >= ? AND spad.date <= ?) GROUP BY company.id",
 						DerbyDatabase.DB_MAP_SPAD_TABLE);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
 			sel.setDate(1, startDate);
@@ -131,7 +130,7 @@ public class DerbyStrategy implements IDataStrategy {
 			}
 		}
 		String rsql = String
-				.format("SELECT company.id,spad.close_value,spad.date FROM %s INNER JOIN company ON spad.name=company.id  WHERE (company.id = ? AND spad.date >= ? AND spad.date <= ?) ORDER BY spad.date DESC FETCH FIRST 1 ROWS ONLY",
+				.format("SELECT company.id,company.name,spad.close_value,spad.date FROM %s INNER JOIN company ON spad.name=company.id  WHERE (company.id = ? AND spad.date >= ? AND spad.date <= ?) ORDER BY spad.date DESC FETCH FIRST 1 ROWS ONLY",
 						DerbyDatabase.DB_MAP_SPAD_TABLE);
 		System.out.println(rsql);
 		for (int i = 0; i < r.size(); i++) {
@@ -143,9 +142,10 @@ public class DerbyStrategy implements IDataStrategy {
 				try (ResultSet rs = db.selectQuery(sel)) {
 					while (rs.next()) {
 						//System.out.println(rs.getString(1) + " "+ rs.getDate(3) + " " + rs.getDouble(2));
-						r.get(i).setdPriceMin(rs.getDouble(2) - r.get(i).getdPriceMin());
-						r.get(i).setdPriceMax(rs.getDouble(2) - r.get(i).getdPriceMax());
-						r.get(i).setdPriceAvg(rs.getDouble(2) - r.get(i).getdPriceAvg());
+						r.get(i).setCompanyName(rs.getString(2));
+						r.get(i).setdPriceMin(rs.getDouble(3) - r.get(i).getdPriceMin());
+						r.get(i).setdPriceMax(rs.getDouble(3) - r.get(i).getdPriceMax());
+						r.get(i).setdPriceAvg(rs.getDouble(3) - r.get(i).getdPriceAvg());
 					}
 				}
 			}
