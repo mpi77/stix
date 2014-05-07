@@ -12,7 +12,7 @@ import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 06.05.2014/1.5
+ * @version 07.05.2014/1.6
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -56,7 +56,12 @@ public class DerbyStrategy implements IDataStrategy {
 	public ArrayList<Item> getItems(Date startDate, Date endDate)
 			throws SQLException {
 		ArrayList<Item> r = new ArrayList<Item>();
-		// TODO: startDate, endDate conditions
+		if (startDate == null) {
+			startDate = this.getSpadFirstDate();
+		}
+		if (endDate == null) {
+			endDate = this.getSpadLastDate();
+		}
 		String ssql = String.format("SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM %s",
 				Item.DB_MAP_ID, Item.DB_MAP_NAME, Item.DB_MAP_DATE,
 				Item.DB_MAP_OPEN, Item.DB_MAP_CLOSE, Item.DB_MAP_MAX,
