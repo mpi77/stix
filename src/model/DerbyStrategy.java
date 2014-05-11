@@ -7,12 +7,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import sun.security.action.GetLongAction;
-import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 07.05.2014/1.6
+ * @version 11.05.2014/1.7
  */
 public class DerbyStrategy implements IDataStrategy {
 
