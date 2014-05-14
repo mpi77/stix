@@ -18,7 +18,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 06.05.2014/1.3
+ * @version 14.05.2014/1.4
  */
 public class Downloader implements Runnable {
 
@@ -56,7 +56,7 @@ public class Downloader implements Runnable {
 			ArrayList<Item> r = ps.parseSpad(String.format("%s/%s", workingDir, localFile), lastDate);
 			// save parsed items to db
 			ds.insertItems(r);
-			//System.out.println("DW success");
+			//System.out.println("DW saved " + r.size() + " new items");
 		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 		}
