@@ -7,10 +7,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-
 /**
  * @author MPI
- * @version 11.05.2014/1.7
+ * @version 14.05.2014/1.8
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -116,10 +115,21 @@ public class DerbyStrategy implements IDataStrategy {
 			endDate = this.getSpadLastDate();
 		}
 		String ssql = String
-				.format("SELECT company.id, AVG(spad.close_value), AVG(spad.volume), MIN(spad.close_value), "
-						+ "MAX(spad.close_value), AVG(spad.close_value) FROM %s,company "
-						+ "WHERE (spad.name=company.id AND spad.date >= ? AND spad.date <= ?) GROUP BY company.id",
-						DerbyDatabase.DB_MAP_SPAD_TABLE);
+				.format("SELECT %s, AVG(%s), AVG(%s), MIN(%s), "
+						+ "MAX(%s), AVG(%s) FROM %s,%s "
+						+ "WHERE (%s=%s AND %s >= ? AND %s <= ?) GROUP BY %s",
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_VOLUME,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE, DerbyDatabase.DB_MAP_COMPANY_TABLE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
 			sel.setDate(1, startDate);
 			sel.setDate(2, endDate);
@@ -133,9 +143,22 @@ public class DerbyStrategy implements IDataStrategy {
 			}
 		}
 		String rsql = String
-				.format("SELECT company.id,company.name,spad.close_value,spad.date FROM %s INNER JOIN company ON spad.name=company.id  WHERE (company.id = ? AND spad.date >= ? AND spad.date <= ?) ORDER BY spad.date DESC FETCH FIRST 1 ROWS ONLY",
-						DerbyDatabase.DB_MAP_SPAD_TABLE);
-		System.out.println(rsql);
+				.format("SELECT %s,%s,%s,%s "
+						+ "FROM %s INNER JOIN %s ON %s=%s  "
+						+ "WHERE (%s = ? AND %s >= ? AND %s <= ?) "
+						+ "ORDER BY %s DESC FETCH FIRST 1 ROWS ONLY",
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_NAME,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE, DerbyDatabase.DB_MAP_COMPANY_TABLE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
+						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE);
+		//System.out.println("last date in db: " + this.getSpadLastDate());
 		for (int i = 0; i < r.size(); i++) {
 			try (PreparedStatement sel = db.getConnection().prepareStatement(
 					rsql)) {
@@ -144,11 +167,15 @@ public class DerbyStrategy implements IDataStrategy {
 				sel.setDate(3, endDate);
 				try (ResultSet rs = db.selectQuery(sel)) {
 					while (rs.next()) {
-						//System.out.println(rs.getString(1) + " "+ rs.getDate(3) + " " + rs.getDouble(2));
+						// System.out.println(rs.getString(1) + " "+
+						// rs.getDate(3) + " " + rs.getDouble(2));
 						r.get(i).setCompanyName(rs.getString(2));
-						r.get(i).setdPriceMin(rs.getDouble(3) - r.get(i).getdPriceMin());
-						r.get(i).setdPriceMax(rs.getDouble(3) - r.get(i).getdPriceMax());
-						r.get(i).setdPriceAvg(rs.getDouble(3) - r.get(i).getdPriceAvg());
+						r.get(i).setdPriceMin(
+								rs.getDouble(3) - r.get(i).getdPriceMin());
+						r.get(i).setdPriceMax(
+								rs.getDouble(3) - r.get(i).getdPriceMax());
+						r.get(i).setdPriceAvg(
+								rs.getDouble(3) - r.get(i).getdPriceAvg());
 					}
 				}
 			}
