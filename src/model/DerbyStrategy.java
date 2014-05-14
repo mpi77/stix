@@ -114,15 +114,26 @@ public class DerbyStrategy implements IDataStrategy {
 		if (endDate == null) {
 			endDate = this.getSpadLastDate();
 		}
+		/*
+		 * ssql structure
+		 * 1 - company id
+		 * 2 - avg price (open+close/2)
+		 * 3 - avg volume
+		 * 4 - min price
+		 * 5 - max price
+		 * 6 - avg price (open+close/2)
+		 */
 		String ssql = String
-				.format("SELECT %s, AVG(%s), AVG(%s), MIN(%s), "
-						+ "MAX(%s), AVG(%s) FROM %s,%s "
+				.format("SELECT %s, AVG((%s+%s)/2), AVG(%s), MIN(%s), "
+						+ "MAX(%s), AVG((%s+%s)/2) FROM %s,%s "
 						+ "WHERE (%s=%s AND %s >= ? AND %s <= ?) GROUP BY %s",
 						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_VOLUME,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
 						DerbyDatabase.DB_MAP_SPAD_TABLE, DerbyDatabase.DB_MAP_COMPANY_TABLE,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
@@ -142,13 +153,21 @@ public class DerbyStrategy implements IDataStrategy {
 				}
 			}
 		}
+		/*
+		 * rsql structure - fetch newest data
+		 * 1 - company id
+		 * 2 - company name
+		 * 3 - actual avg price (per day)
+		 * 4 - date
+		 */
 		String rsql = String
-				.format("SELECT %s,%s,%s,%s "
+				.format("SELECT %s,%s,((%s+%s)/2),%s "
 						+ "FROM %s INNER JOIN %s ON %s=%s  "
 						+ "WHERE (%s = ? AND %s >= ? AND %s <= ?) "
 						+ "ORDER BY %s DESC FETCH FIRST 1 ROWS ONLY",
 						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
 						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_NAME,
+						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
 						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
 						DerbyDatabase.DB_MAP_SPAD_TABLE, DerbyDatabase.DB_MAP_COMPANY_TABLE,
@@ -175,7 +194,7 @@ public class DerbyStrategy implements IDataStrategy {
 						r.get(i).setdPriceMax(
 								rs.getDouble(3) - r.get(i).getdPriceMax());
 						r.get(i).setdPriceAvg(
-								rs.getDouble(3) - r.get(i).getdPriceAvg());
+								r.get(i).getdPriceAvg() - rs.getDouble(3));
 					}
 				}
 			}
