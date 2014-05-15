@@ -202,4 +202,10 @@ public class DerbyStrategy implements IDataStrategy {
 		return r;
 	}
 
+	@Override
+	public ArrayList<SpadItem> getPurchaseRecommendation() throws SQLException {
+		ArrayList<SpadItem> r = new ArrayList<SpadItem>();
+		return r;
+	}
+
 }
