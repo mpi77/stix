@@ -86,6 +86,28 @@ public class DerbyStrategy implements IDataStrategy {
 
 	@Override
 	public void insertItem(Item item) throws SQLException {
+		String ssql = String.format("SELECT COUNT(%s) FROM %s WHERE (%s = ?)",
+				Company.DB_MAP_ID, DerbyDatabase.DB_MAP_COMPANY_TABLE,
+				Company.DB_MAP_ID);
+		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
+			sel.setString(1, item.getName());
+			try (ResultSet rs = db.selectQuery(sel)) {
+				if (rs.next() && rs.getInt(1) < 1) {
+					// insert new company
+					String qsql = String.format(
+							"INSERT INTO %s (%s,%s) VALUES (?,?)",
+							DerbyDatabase.DB_MAP_COMPANY_TABLE,
+							Company.DB_MAP_ID, Company.DB_MAP_NAME);
+					try (PreparedStatement ins = db
+							.getConnection()
+							.prepareStatement(qsql, Statement.NO_GENERATED_KEYS)) {
+						ins.setString(1, item.getName());
+						ins.setString(2, item.getName());
+						Integer ia = db.actionQuery(ins, false);
+					}
+				}
+			}
+		}
 		String isql = String.format(
 				"INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s) VALUES (?,?,?,?,?,?,?)",
 				DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
