@@ -122,32 +122,28 @@ public class DerbyStrategy implements IDataStrategy {
 			endDate = this.getSpadLastDate();
 		}
 		/*
-		 * ssql structure
-		 * 1 - company id
-		 * 2 - avg price (open+close/2)
-		 * 3 - avg volume
-		 * 4 - min price
-		 * 5 - max price
-		 * 6 - avg price (open+close/2)
+		 * ssql structure 1 - company id 2 - avg price (open+close/2) 3 - avg
+		 * volume 4 - min price 5 - max price 6 - avg price (open+close/2)
 		 */
-		String ssql = String
-				.format("SELECT %s, AVG((%s+%s)/2), AVG(%s), MIN(%s), "
+		String ssql = String.format(
+				"SELECT %s, AVG((%s+%s)/2), AVG(%s), MIN(%s), "
 						+ "MAX(%s), AVG((%s+%s)/2) FROM %s,%s "
 						+ "WHERE (%s=%s AND %s >= ? AND %s <= ?) GROUP BY %s",
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_VOLUME,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE, DerbyDatabase.DB_MAP_COMPANY_TABLE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID);
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_ID,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_OPEN,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_CLOSE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_VOLUME,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_CLOSE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_CLOSE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_OPEN,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_CLOSE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_NAME,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_ID,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_ID);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
 			sel.setDate(1, startDate);
 			sel.setDate(2, endDate);
@@ -161,30 +157,27 @@ public class DerbyStrategy implements IDataStrategy {
 			}
 		}
 		/*
-		 * rsql structure - fetch newest data
-		 * 1 - company id
-		 * 2 - company name
-		 * 3 - actual avg price (per day)
-		 * 4 - date
+		 * rsql structure - fetch newest data 1 - company id 2 - company name 3
+		 * - actual avg price (per day) 4 - date
 		 */
-		String rsql = String
-				.format("SELECT %s,%s,((%s+%s)/2),%s "
-						+ "FROM %s INNER JOIN %s ON %s=%s  "
-						+ "WHERE (%s = ? AND %s >= ? AND %s <= ?) "
-						+ "ORDER BY %s DESC FETCH FIRST 1 ROWS ONLY",
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_NAME,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE, DerbyDatabase.DB_MAP_COMPANY_TABLE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
-						DerbyDatabase.DB_MAP_COMPANY_TABLE+"."+Company.DB_MAP_ID,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE,
-						DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE);
-		//System.out.println("last date in db: " + this.getSpadLastDate());
+		String rsql = String.format("SELECT %s,%s,((%s+%s)/2),%s "
+				+ "FROM %s INNER JOIN %s ON %s=%s  "
+				+ "WHERE (%s = ? AND %s >= ? AND %s <= ?) "
+				+ "ORDER BY %s DESC FETCH FIRST 1 ROWS ONLY",
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_ID,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_NAME,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_OPEN,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_CLOSE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_NAME,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_ID,
+				DerbyDatabase.DB_MAP_COMPANY_TABLE + "." + Company.DB_MAP_ID,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE);
+		// System.out.println("last date in db: " + this.getSpadLastDate());
 		for (int i = 0; i < r.size(); i++) {
 			try (PreparedStatement sel = db.getConnection().prepareStatement(
 					rsql)) {
@@ -213,14 +206,16 @@ public class DerbyStrategy implements IDataStrategy {
 	public String[] getPurchaseRecommendation() throws SQLException {
 		String[] r;
 		Date[] dates = new Date[3];
-		
-		String ssql = String.format("SELECT %s FROM %s GROUP BY %s ORDER BY %s DESC FETCH FIRST 3 ROWS ONLY", 
-				Item.DB_MAP_DATE, DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_DATE, Item.DB_MAP_DATE);
+
+		String ssql = String
+				.format("SELECT %s FROM %s GROUP BY %s ORDER BY %s DESC FETCH FIRST 3 ROWS ONLY",
+						Item.DB_MAP_DATE, DerbyDatabase.DB_MAP_SPAD_TABLE,
+						Item.DB_MAP_DATE, Item.DB_MAP_DATE);
 		try (PreparedStatement ins = db.getConnection().prepareStatement(ssql)) {
 			try (ResultSet rs = db.selectQuery(ins)) {
 				int i = 0;
 				while (rs.next()) {
-					if(i < dates.length){
+					if (i < dates.length) {
 						dates[i] = rs.getDate(1);
 						i++;
 					}
@@ -228,22 +223,21 @@ public class DerbyStrategy implements IDataStrategy {
 			}
 		}
 		System.out.println(Arrays.toString(dates));
-		HashMap<String,Double> map = new HashMap<String,Double>();
-		for(int i = 0; i < dates.length; i++){
-			String rsql = String
-					.format("SELECT %s,(%s-%s) FROM %s "
-							+ "WHERE (%s = ?) ",
-							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
-							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
-							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
-							DerbyDatabase.DB_MAP_SPAD_TABLE,
-							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE);
-			try (PreparedStatement sel = db.getConnection().prepareStatement(rsql)) {
+		HashMap<String, Double> map = new HashMap<String, Double>();
+		for (int i = 0; i < dates.length; i++) {
+			String rsql = String.format("SELECT %s,(%s-%s) FROM %s "
+					+ "WHERE (%s = ?) ", DerbyDatabase.DB_MAP_SPAD_TABLE + "."
+					+ Item.DB_MAP_NAME, DerbyDatabase.DB_MAP_SPAD_TABLE + "."
+					+ Item.DB_MAP_OPEN, DerbyDatabase.DB_MAP_SPAD_TABLE + "."
+					+ Item.DB_MAP_CLOSE, DerbyDatabase.DB_MAP_SPAD_TABLE,
+					DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_DATE);
+			try (PreparedStatement sel = db.getConnection().prepareStatement(
+					rsql)) {
 				sel.setDate(1, dates[i]);
 				try (ResultSet rs = db.selectQuery(sel)) {
 					while (rs.next()) {
-						if(map.containsKey(rs.getString(1))){
-							if(map.get(rs.getString(1)) < rs.getDouble(2)){
+						if (map.containsKey(rs.getString(1))) {
+							if (map.get(rs.getString(1)) < rs.getDouble(2)) {
 								map.put(rs.getString(1), rs.getDouble(2));
 							}
 						} else {
@@ -253,37 +247,38 @@ public class DerbyStrategy implements IDataStrategy {
 				}
 			}
 		}
-		ValueComparator bvc =  new ValueComparator(map);
-        TreeMap<String,Double> sorted_map = new TreeMap<String,Double>(bvc);
-        sorted_map.putAll(map);
-        
-        r = new String[map.size()];
-        int i = 0;
-        Set<Entry<String, Double>> set = sorted_map.entrySet();
-        Iterator<Entry<String, Double>> iterator = set.iterator();
-        while(iterator.hasNext()) {
-              Entry<String, Double> me = iterator.next();
-              if(i < r.length) {
-            	  r[i] = me.getKey();
-              }
-              i++;
-        }
+		ValueComparator bvc = new ValueComparator(map);
+		TreeMap<String, Double> sorted_map = new TreeMap<String, Double>(bvc);
+		sorted_map.putAll(map);
+
+		r = new String[map.size()];
+		int i = 0;
+		Set<Entry<String, Double>> set = sorted_map.entrySet();
+		Iterator<Entry<String, Double>> iterator = set.iterator();
+		while (iterator.hasNext()) {
+			Entry<String, Double> me = iterator.next();
+			if (i < r.length) {
+				r[i] = me.getKey();
+			}
+			i++;
+		}
 		return r;
 	}
-	
+
 	public class ValueComparator implements Comparator<String> {
 
-	    HashMap<String, Double> base;
-	    public ValueComparator(HashMap<String, Double> base) {
-	        this.base = base;
-	    }
- 
-	    public int compare(String a, String b) {
-	        if (base.get(a) >= base.get(b)) {
-	            return -1;
-	        } else {
-	            return 1;
-	        }
-	    }
+		HashMap<String, Double> base;
+
+		public ValueComparator(HashMap<String, Double> base) {
+			this.base = base;
+		}
+
+		public int compare(String a, String b) {
+			if (base.get(a) >= base.get(b)) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}
 	}
 }
