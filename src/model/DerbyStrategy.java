@@ -93,7 +93,6 @@ public class DerbyStrategy implements IDataStrategy {
 			try (ResultSet rs = db.selectQuery(sel)) {
 				if (rs.next() && rs.getInt(1) < 1) {
 					// insert new company
-					System.out.println("a");
 					String qsql = String.format(
 							"INSERT INTO %s (%s,%s) VALUES (?,?)",
 							DerbyDatabase.DB_MAP_COMPANY_TABLE,
@@ -306,8 +305,8 @@ public class DerbyStrategy implements IDataStrategy {
 	@Override
 	public ArrayList<Company> getCompanies() throws SQLException {
 		ArrayList<Company> r = new ArrayList<Company>();
-		String ssql = String.format("SELECT %s,%s FROM %s",
-				Company.DB_MAP_ID, Company.DB_MAP_NAME, DerbyDatabase.DB_MAP_COMPANY_TABLE);
+		String ssql = String.format("SELECT %s,%s FROM %s", Company.DB_MAP_ID,
+				Company.DB_MAP_NAME, DerbyDatabase.DB_MAP_COMPANY_TABLE);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
 			try (ResultSet rs = db.selectQuery(sel)) {
 				while (rs.next()) {
