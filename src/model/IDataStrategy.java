@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 /**
  * @author MPI
- * @version 15.05.2014/1.6
+ * @version 16.05.2014/1.7
  */
 public interface IDataStrategy {
 	/**
@@ -39,10 +39,10 @@ public interface IDataStrategy {
 	/**
 	 * Get SPAD purchase recommendation.
 	 * 
-	 * @return ArrayList with SpadItems ordered DESC by best item to buy
+	 * @return String[] with keys ordered DESC by best item to buy
 	 * @throws SQLException
 	 */
-	public ArrayList<SpadItem> getPurchaseRecommendation() throws SQLException;
+	public String[] getPurchaseRecommendation() throws SQLException;
 	
 	/**
 	 * Get items (raw item data) from SPAD in given date interval.

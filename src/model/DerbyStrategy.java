@@ -6,10 +6,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author MPI
- * @version 14.05.2014/1.8
+ * @version 16.05.2014/1.9
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -203,9 +212,80 @@ public class DerbyStrategy implements IDataStrategy {
 	}
 
 	@Override
-	public ArrayList<SpadItem> getPurchaseRecommendation() throws SQLException {
-		ArrayList<SpadItem> r = new ArrayList<SpadItem>();
+	public String[] getPurchaseRecommendation() throws SQLException {
+		String[] r;
+		Date[] dates = new Date[3];
+		
+		String ssql = String.format("SELECT %s FROM %s GROUP BY %s ORDER BY %s DESC FETCH FIRST 3 ROWS ONLY", 
+				Item.DB_MAP_DATE, DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_DATE, Item.DB_MAP_DATE);
+		try (PreparedStatement ins = db.getConnection().prepareStatement(ssql)) {
+			try (ResultSet rs = db.selectQuery(ins)) {
+				int i = 0;
+				while (rs.next()) {
+					if(i < dates.length){
+						dates[i] = rs.getDate(1);
+						i++;
+					}
+				}
+			}
+		}
+		System.out.println(Arrays.toString(dates));
+		HashMap<String,Double> map = new HashMap<String,Double>();
+		for(int i = 0; i < dates.length; i++){
+			String rsql = String
+					.format("SELECT %s,(%s-%s) FROM %s "
+							+ "WHERE (%s = ?) ",
+							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_NAME,
+							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_OPEN,
+							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_CLOSE,
+							DerbyDatabase.DB_MAP_SPAD_TABLE,
+							DerbyDatabase.DB_MAP_SPAD_TABLE+"."+Item.DB_MAP_DATE);
+			try (PreparedStatement sel = db.getConnection().prepareStatement(rsql)) {
+				sel.setDate(1, dates[i]);
+				try (ResultSet rs = db.selectQuery(sel)) {
+					while (rs.next()) {
+						if(map.containsKey(rs.getString(1))){
+							if(map.get(rs.getString(1)) < rs.getDouble(2)){
+								map.put(rs.getString(1), rs.getDouble(2));
+							}
+						} else {
+							map.put(rs.getString(1), rs.getDouble(2));
+						}
+					}
+				}
+			}
+		}
+		ValueComparator bvc =  new ValueComparator(map);
+        TreeMap<String,Double> sorted_map = new TreeMap<String,Double>(bvc);
+        sorted_map.putAll(map);
+        
+        r = new String[map.size()];
+        int i = 0;
+        Set<Entry<String, Double>> set = sorted_map.entrySet();
+        Iterator<Entry<String, Double>> iterator = set.iterator();
+        while(iterator.hasNext()) {
+              Entry<String, Double> me = iterator.next();
+              if(i < r.length) {
+            	  r[i] = me.getKey();
+              }
+              i++;
+        }
 		return r;
 	}
+	
+	public class ValueComparator implements Comparator<String> {
 
+	    HashMap<String, Double> base;
+	    public ValueComparator(HashMap<String, Double> base) {
+	        this.base = base;
+	    }
+ 
+	    public int compare(String a, String b) {
+	        if (base.get(a) >= base.get(b)) {
+	            return -1;
+	        } else {
+	            return 1;
+	        }
+	    }
+	}
 }
