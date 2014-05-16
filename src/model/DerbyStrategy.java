@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,7 +15,7 @@ import java.util.TreeMap;
 
 /**
  * @author MPI
- * @version 16.05.2014/1.9
+ * @version 16.05.2014/1.10
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -94,6 +93,7 @@ public class DerbyStrategy implements IDataStrategy {
 			try (ResultSet rs = db.selectQuery(sel)) {
 				if (rs.next() && rs.getInt(1) < 1) {
 					// insert new company
+					System.out.println("a");
 					String qsql = String.format(
 							"INSERT INTO %s (%s,%s) VALUES (?,?)",
 							DerbyDatabase.DB_MAP_COMPANY_TABLE,
@@ -244,7 +244,6 @@ public class DerbyStrategy implements IDataStrategy {
 				}
 			}
 		}
-		System.out.println(Arrays.toString(dates));
 		HashMap<String, Double> map = new HashMap<String, Double>();
 		for (int i = 0; i < dates.length; i++) {
 			String rsql = String.format("SELECT %s,(%s-%s) FROM %s "
@@ -302,5 +301,21 @@ public class DerbyStrategy implements IDataStrategy {
 				return 1;
 			}
 		}
+	}
+
+	@Override
+	public ArrayList<Company> getCompanies() throws SQLException {
+		ArrayList<Company> r = new ArrayList<Company>();
+		String ssql = String.format("SELECT %s,%s FROM %s",
+				Company.DB_MAP_ID, Company.DB_MAP_NAME, DerbyDatabase.DB_MAP_COMPANY_TABLE);
+		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
+			try (ResultSet rs = db.selectQuery(sel)) {
+				while (rs.next()) {
+					Company a = new Company(rs.getString(1), rs.getString(2));
+					r.add(a);
+				}
+			}
+		}
+		return r;
 	}
 }

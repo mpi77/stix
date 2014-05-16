@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import model.Company;
 import model.DerbyDatabase;
 import model.DerbyStrategy;
 import model.IDataStrategy;
@@ -14,7 +15,7 @@ import view.SpadTableModel;
 
 /**
  * @author MPI
- * @version 16.05.2014/1.3
+ * @version 16.05.2014/1.4
  */
 public class SpadFormTest {
 
@@ -27,6 +28,8 @@ public class SpadFormTest {
 			SpadForm form = new SpadForm(model);
 			String[] recom = ds.getPurchaseRecommendation();
 			System.out.println(Arrays.deepToString(recom));
+			ArrayList<Company> companies = ds.getCompanies();
+			System.out.println(companies);
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}

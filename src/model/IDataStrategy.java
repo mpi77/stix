@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 /**
  * @author MPI
- * @version 16.05.2014/1.7
+ * @version 16.05.2014/1.8
  */
 public interface IDataStrategy {
 	/**
@@ -43,6 +43,14 @@ public interface IDataStrategy {
 	 * @throws SQLException
 	 */
 	public String[] getPurchaseRecommendation() throws SQLException;
+	
+	/**
+	 * Get all companies in company table.
+	 * 
+	 * @return ArrayList with Company item
+	 * @throws SQLException
+	 */
+	public ArrayList<Company> getCompanies() throws SQLException;
 	
 	/**
 	 * Get items (raw item data) from SPAD in given date interval.
