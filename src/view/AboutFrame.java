@@ -21,7 +21,7 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * @author MPI
- * @version 23.05.2014/1.0
+ * @version 23.05.2014/1.1
  */
 public class AboutFrame extends JFrame {
 
@@ -63,7 +63,7 @@ public class AboutFrame extends JFrame {
 		JButton btnNewButton = new JButton("Close");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//System.exit(0);
+				AboutFrame.this.setVisible(false);
 			}
 		});
 		contentPane.add(btnNewButton, BorderLayout.SOUTH);
@@ -71,18 +71,22 @@ public class AboutFrame extends JFrame {
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.CENTER);
 		panel.setLayout(new MigLayout("", "[grow,center]", "[center][center][center][]"));
+		panel.setLayout(new MigLayout("", "[grow,center]", "[center][][][]"));
 		
 		JLabel lblNewLabel_1 = new JLabel("STIX is SPAD viewer released under BSD licence.");
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
-		panel.add(lblNewLabel_1, "cell 0 0,growx");
+		panel.add(lblNewLabel_1, "cell 0 0,grow");
 		
 		JLabel lblNewLabel_2 = new JLabel("(c) 2014");
-		panel.add(lblNewLabel_2, "cell 0 1");
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblNewLabel_2, "cell 0 2,grow");
 		
 		JLabel lblNewLabel_3 = new JLabel("Contributors:");
-		panel.add(lblNewLabel_3, "cell 0 2");
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblNewLabel_3, "cell 0 4,grow");
 		
 		JLabel lblNewLabel_4 = new JLabel("MPI <m2bures@gmail.com>");
-		panel.add(lblNewLabel_4, "cell 0 3");
+		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblNewLabel_4, "cell 0 5,grow");
 	}
 }
