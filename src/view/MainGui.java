@@ -39,7 +39,7 @@ import com.toedter.calendar.JDateChooser;
 
 /**
  * @author MPI
- * @version 23.05.2014/1.1
+ * @version 23.05.2014/1.2
  */
 public class MainGui {
 
@@ -62,6 +62,7 @@ public class MainGui {
 			this.data = this.ds.getSpadItems(null, null);
 			this.model = new SpadTableModel(MainGui.columnNames, this.data);
 			initialize();
+			this.frmSpadViewer.setVisible(true);
 		} catch (SQLException e) {
 			// TODO warning dialog
 			e.printStackTrace();
@@ -78,7 +79,6 @@ public class MainGui {
 				try {
 					ds = new DerbyStrategy(new DerbyDatabase());
 					MainGui window = new MainGui(ds);
-					window.frmSpadViewer.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
