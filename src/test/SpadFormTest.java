@@ -27,9 +27,10 @@ public class SpadFormTest {
 			SpadTableModel model = new SpadTableModel(SpadForm.columnNames, data);
 			SpadForm form = new SpadForm(model);
 			String[] recom = ds.getPurchaseRecommendation();
-			System.out.println(Arrays.deepToString(recom));
+			System.out.println("Recommendation: " + Arrays.deepToString(recom));
 			ArrayList<Company> companies = ds.getCompanies();
-			System.out.println(companies);
+			System.out.println("Companies: " + companies);
+			System.out.println("Last date: " + ds.getSpadLastDate());
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
