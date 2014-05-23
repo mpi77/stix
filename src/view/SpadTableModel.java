@@ -1,16 +1,12 @@
 package view;
 
-import java.sql.Date;
 import java.util.ArrayList;
-
 import javax.swing.table.AbstractTableModel;
-
-import model.Item;
 import model.SpadItem;
 
 /**
  * @author MPI
- * @version 04.05.2014/1.1
+ * @version 23.05.2014/1.2
  */
 public class SpadTableModel extends AbstractTableModel {
 	public static final int SPAD_COLUMN_NAME = 0;
@@ -30,7 +26,7 @@ public class SpadTableModel extends AbstractTableModel {
 	}
 
 	public String getColumnName(int column) {
-		return columnNames[column];
+		return (columnNames == null) ? "" : columnNames[column];
 	}
 
 	public Class getColumnClass(int column) {
@@ -51,12 +47,12 @@ public class SpadTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {
-		return columnNames.length;
+		return (columnNames == null) ? 0 : columnNames.length;
 	}
 
 	@Override
 	public int getRowCount() {
-		return data.size();
+		return (data == null) ? 0 : data.size();
 	}
 
 	@Override
