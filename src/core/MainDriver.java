@@ -1,5 +1,7 @@
 package core;
 
+import javax.swing.JOptionPane;
+
 import model.DerbyDatabase;
 import model.DerbyStrategy;
 import model.IDataStrategy;
@@ -7,7 +9,7 @@ import view.MainGui;
 
 /**
  * @author MPI
- * @version 23.05.2014/1.1
+ * @version 24.05.2014/1.2
  */
 public class MainDriver {
 
@@ -17,7 +19,8 @@ public class MainDriver {
 			ds = new DerbyStrategy(new DerbyDatabase());
 			MainGui window = new MainGui(ds);
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }

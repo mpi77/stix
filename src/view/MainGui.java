@@ -51,7 +51,7 @@ import javax.swing.BoxLayout;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.3
+ * @version 24.05.2014/1.4
  */
 public class MainGui {
 
@@ -78,12 +78,12 @@ public class MainGui {
 			initialize();
 			this.frmSpadViewer.setVisible(true);
 		} catch (SQLException e) {
-			JOptionPane.showMessageDialog(MainGui.this.frmSpadViewer,
-					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
-	
-	public void setStatusLabel(String text){
+
+	public void setStatusLabel(String text) {
 		label_status.setText(text);
 	}
 
@@ -98,7 +98,8 @@ public class MainGui {
 					ds = new DerbyStrategy(new DerbyDatabase());
 					MainGui window = new MainGui(ds);
 				} catch (Exception e) {
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, e.getMessage(),
+							"Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -220,9 +221,8 @@ public class MainGui {
 				model = new SpadTableModel(MainGui.columnNames, data);
 				tableData.setModel(model);
 			} catch (SQLException e1) {
-				JOptionPane.showMessageDialog(MainGui.this.frmSpadViewer,
-						e1.getMessage(), "SQL EXCEPTION",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, e1.getMessage(),
+						"Error", JOptionPane.ERROR_MESSAGE);
 				e1.printStackTrace();
 			}
 		}
@@ -246,16 +246,18 @@ public class MainGui {
 		}
 
 	}
-	
-	private class SelectRowListener implements ListSelectionListener{
+
+	private class SelectRowListener implements ListSelectionListener {
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			int[] selR = tableData.getSelectedRows();
-			tabbedPane.setSelectedIndex(1);
-			System.out.println(data.get(selR[0]));
+			int[] selectedRows = tableData.getSelectedRows();
+			if (selectedRows.length > 0) {
+				tabbedPane.setSelectedIndex(1);
+				System.out.println(data.get(selectedRows[0]));
+			}
 		}
-		
+
 	}
 
 	private class ManualDownloaderListener implements ActionListener {
@@ -263,7 +265,8 @@ public class MainGui {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Thread t = new Thread(new Downloader(ds, new CsvParser(),
-					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH, MainGui.this));
+					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH,
+					MainGui.this));
 			t.start();
 			MainGui.this.setStatusLabel("Downloading...");
 		}
