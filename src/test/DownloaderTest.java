@@ -11,7 +11,7 @@ import core.Downloader;
 
 /**
  * @author MPI
- * @version 21.04.2014/1.1
+ * @version 24.04.2014/1.2
  */
 public class DownloaderTest {
 
@@ -24,7 +24,7 @@ public class DownloaderTest {
 		try {
 			ds = new DerbyStrategy(new DerbyDatabase());
 			ps = new CsvParser();
-			Downloader d = new Downloader(ds, ps, Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH);
+			Downloader d = new Downloader(ds, ps, Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH, null);
 			Thread td = new Thread(d);
 			td.start();
 		} catch (ClassNotFoundException | SQLException e) {

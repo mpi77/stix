@@ -4,9 +4,10 @@ package model;
  * SpadItem (data from datastrategy by company) POJO object.
  * 
  * @author MPI
- * @version 06.05.2014/1.2
+ * @version 24.05.2014/1.3
  */
 public class SpadItem {
+	
 	private String companyId;
 	private String companyName;
 	private Double avPrice;
@@ -98,5 +99,12 @@ public class SpadItem {
 	public void setdPriceAvg(Double dPriceAvg) {
 		this.dPriceAvg = dPriceAvg;
 	}
-
+	
+	@Override
+	public String toString() {
+		return "SpadItem [companyId=" + companyId + ", companyName="
+				+ companyName + ", avPrice=" + avPrice + ", avVolume="
+				+ avVolume + ", dPriceMin=" + dPriceMin + ", dPriceMax="
+				+ dPriceMax + ", dPriceAvg=" + dPriceAvg + "]";
+	}
 }

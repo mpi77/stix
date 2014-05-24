@@ -12,13 +12,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import view.MainGui;
 import model.IDataStrategy;
 import model.IParser;
 import model.Item;
 
 /**
  * @author MPI
- * @version 14.05.2014/1.4
+ * @version 24.05.2014/1.4
  */
 public class Downloader implements Runnable {
 
@@ -30,12 +31,15 @@ public class Downloader implements Runnable {
 	private String remoteFile;
 	private String localFile;
 	private String workingDir = System.getProperty("user.dir");
+	private MainGui gui;
 
-	public Downloader(IDataStrategy ds, IParser ps, String remoteFile, String localFile) {
+	public Downloader(IDataStrategy ds, IParser ps, String remoteFile,
+			String localFile, MainGui gui) {
 		this.ds = ds;
 		this.ps = ps;
 		this.remoteFile = remoteFile;
 		this.localFile = localFile;
+		this.gui = gui;
 	}
 
 	@Override
@@ -45,7 +49,7 @@ public class Downloader implements Runnable {
 			download();
 			// get max date in db
 			Date lastDate = ds.getSpadLastDate();
-			if(lastDate != null){
+			if (lastDate != null) {
 				// need to increment date
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(lastDate);
@@ -53,12 +57,22 @@ public class Downloader implements Runnable {
 				lastDate = new Date(cal.getTimeInMillis());
 			}
 			// parse downloaded file, get items with newer date than max date
-			ArrayList<Item> r = ps.parseSpad(String.format("%s/%s", workingDir, localFile), lastDate);
+			ArrayList<Item> r = ps.parseSpad(
+					String.format("%s/%s", workingDir, localFile), lastDate);
 			// save parsed items to db
 			ds.insertItems(r);
-			//System.out.println("DW saved " + r.size() + " new items");
+			// System.out.println("DW saved " + r.size() + " new items");
+			if (gui == null) {
+				System.out.println("Downloader finished.");
+			} else {
+				gui.setStatusLabel("Downloader finished.");
+			}
 		} catch (IOException | SQLException e) {
-			e.printStackTrace();
+			if (gui == null) {
+				System.out.println(e.getStackTrace());
+			} else {
+				gui.setStatusLabel("Downloader error.");
+			}
 		}
 	}
 
@@ -70,7 +84,7 @@ public class Downloader implements Runnable {
 		url = new URL(remoteFile);
 		con = url.openConnection();
 		File file = new File(String.format("%s/%s", workingDir, localFile));
-		
+
 		try (BufferedInputStream bis = new BufferedInputStream(
 				con.getInputStream());
 				BufferedOutputStream bos = new BufferedOutputStream(
