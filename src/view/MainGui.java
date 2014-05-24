@@ -49,6 +49,19 @@ import java.awt.FlowLayout;
 
 import javax.swing.BoxLayout;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+
 /**
  * @author MPI
  * @version 24.05.2014/1.4
@@ -58,7 +71,10 @@ public class MainGui {
 	private JFrame frmSpadViewer;
 	private JTable tableData;
 	private JLabel label_status;
+	private JLabel label_last_date;
 	private JTabbedPane tabbedPane;
+	private JPanel panel_data;
+	private JPanel panel_graph;
 	private com.toedter.calendar.JDateChooser dchFrom;
 	private com.toedter.calendar.JDateChooser dchTo;
 
@@ -85,6 +101,10 @@ public class MainGui {
 
 	public void setStatusLabel(String text) {
 		label_status.setText(text);
+	}
+	
+	public void setLastDateLabel(String text){
+		label_last_date.setText(text);
 	}
 
 	/**
@@ -141,9 +161,10 @@ public class MainGui {
 		mnStix.add(menu_about);
 
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addChangeListener(new TabbedChangeListener());
 		frmSpadViewer.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
-		JPanel panel_data = new JPanel();
+		panel_data = new JPanel();
 		tabbedPane.addTab("Data", null, panel_data, null);
 		panel_data.setLayout(new BorderLayout(0, 0));
 
@@ -187,14 +208,103 @@ public class MainGui {
 		JLabel lblNewLabel = new JLabel("Last date in db:");
 		data_info.add(lblNewLabel);
 
-		JLabel label_last_date = new JLabel(ds.getSpadLastDate().toString());
+		label_last_date = new JLabel(ds.getSpadLastDate().toString());
 		data_info.add(label_last_date);
 
-		JPanel panel_graph = new JPanel();
+		panel_graph = new JPanel();
 		tabbedPane.addTab("Graph", null, panel_graph, null);
-
+		tabbedPane.setEnabledAt(0, true);
+		tabbedPane.setEnabledAt(1, false);
+		
 		label_status = new JLabel(" ");
 		frmSpadViewer.getContentPane().add(label_status, BorderLayout.SOUTH);
+	}
+
+	private XYDataset createDataset() {
+
+		final XYSeries series1 = new XYSeries("First");
+		series1.add(1.0, 1.0);
+		series1.add(2.0, 4.0);
+		series1.add(3.0, 3.0);
+		series1.add(4.0, 5.0);
+		series1.add(5.0, 5.0);
+		series1.add(6.0, 7.0);
+		series1.add(7.0, 7.0);
+		series1.add(8.0, 8.0);
+
+		final XYSeries series2 = new XYSeries("Second");
+		series2.add(1.0, 5.0);
+		series2.add(2.0, 7.0);
+		series2.add(3.0, 6.0);
+		series2.add(4.0, 8.0);
+		series2.add(5.0, 4.0);
+		series2.add(6.0, 4.0);
+		series2.add(7.0, 2.0);
+		series2.add(8.0, 1.0);
+
+		final XYSeries series3 = new XYSeries("Third");
+		series3.add(3.0, 4.0);
+		series3.add(4.0, 3.0);
+		series3.add(5.0, 2.0);
+		series3.add(6.0, 3.0);
+		series3.add(7.0, 6.0);
+		series3.add(8.0, 3.0);
+		series3.add(9.0, 4.0);
+		series3.add(10.0, 3.0);
+
+		final XYSeriesCollection dataset = new XYSeriesCollection();
+		dataset.addSeries(series1);
+		dataset.addSeries(series2);
+		dataset.addSeries(series3);
+
+		return dataset;
+	}
+
+	private JFreeChart createChart(final XYDataset dataset) {
+
+		// create the chart...
+		final JFreeChart chart = ChartFactory.createXYLineChart(
+				"Line Chart Demo 6", // chart title
+				"X", // x axis label
+				"Y", // y axis label
+				dataset, // data
+				PlotOrientation.VERTICAL, true, // include legend
+				true, // tooltips
+				false // urls
+				);
+		// NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
+		chart.setBackgroundPaint(Color.white);
+		// final StandardLegend legend = (StandardLegend) chart.getLegend();
+		// legend.setDisplaySeriesShapes(true);
+
+		// get a reference to the plot for further customisation...
+		final XYPlot plot = chart.getXYPlot();
+		plot.setBackgroundPaint(Color.lightGray);
+		// plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+		plot.setDomainGridlinePaint(Color.white);
+		plot.setRangeGridlinePaint(Color.white);
+
+		final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+		renderer.setSeriesLinesVisible(0, false);
+		renderer.setSeriesShapesVisible(1, false);
+		plot.setRenderer(renderer);
+
+		// change the auto tick unit selection to integer units only...
+		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+		// OPTIONAL CUSTOMISATION COMPLETED.
+
+		return chart;
+
+	}
+	
+	private void makeChart(){
+		final XYDataset dataset = createDataset();
+        final JFreeChart chart = createChart(dataset);
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        //chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+        panel_graph.removeAll();
+        panel_graph.add(chartPanel);
 	}
 
 	private class FilterListener implements ActionListener {
@@ -221,8 +331,8 @@ public class MainGui {
 				model = new SpadTableModel(MainGui.columnNames, data);
 				tableData.setModel(model);
 			} catch (SQLException e1) {
-				JOptionPane.showMessageDialog(null, e1.getMessage(),
-						"Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
 				e1.printStackTrace();
 			}
 		}
@@ -255,9 +365,22 @@ public class MainGui {
 			if (selectedRows.length > 0) {
 				tabbedPane.setSelectedIndex(1);
 				System.out.println(data.get(selectedRows[0]));
+				tabbedPane.setEnabledAt(1, true);
+				makeChart();
 			}
 		}
 
+	}
+	
+	private class TabbedChangeListener implements ChangeListener{
+
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			if(tabbedPane.getComponentCount() > 1 && tabbedPane.getSelectedIndex() == 0){
+				tabbedPane.setEnabledAt(1, false);
+			}
+		}
+		
 	}
 
 	private class ManualDownloaderListener implements ActionListener {

@@ -22,7 +22,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.5
+ * @version 24.05.2014/1.6
  */
 public class Downloader implements Runnable {
 
@@ -65,6 +65,7 @@ public class Downloader implements Runnable {
 			// save parsed items to db
 			ds.insertItems(r);
 			// System.out.println("DW saved " + r.size() + " new items");
+			updateLastDate();
 			reportProgress("Downloader finished.");
 		} catch (IOException | SQLException e) {
 			reportProgress("Downloader error.");
@@ -102,5 +103,18 @@ public class Downloader implements Runnable {
 				}
 			});
 		}
+	}
+	
+	private void updateLastDate(){
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					gui.setLastDateLabel(ds.getSpadLastDate().toString());
+				} catch (SQLException e) {
+					reportProgress("Downloader error.");
+				}
+			}
+		});
 	}
 }

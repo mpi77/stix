@@ -9,7 +9,7 @@ import view.MainGui;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.2
+ * @version 24.05.2014/1.3
  */
 public class MainDriver {
 
@@ -19,6 +19,7 @@ public class MainDriver {
 			ds = new DerbyStrategy(new DerbyDatabase());
 			MainGui window = new MainGui(ds);
 		} catch (Exception e) {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
 		}
