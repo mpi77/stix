@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 import java.awt.BorderLayout;
@@ -17,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.table.JTableHeader;
 
 import model.Company;
+import model.CsvParser;
 import model.DerbyDatabase;
 import model.DerbyStrategy;
 import model.IDataStrategy;
@@ -37,6 +39,11 @@ import javax.swing.JLabel;
 
 import com.toedter.calendar.JDateChooser;
 
+import core.Downloader;
+import javax.swing.ListSelectionModel;
+import java.awt.FlowLayout;
+import javax.swing.BoxLayout;
+
 /**
  * @author MPI
  * @version 23.05.2014/1.2
@@ -45,15 +52,17 @@ public class MainGui {
 
 	private JFrame frmSpadViewer;
 	private JTable tableData;
+	private JLabel label_status;
+	private com.toedter.calendar.JDateChooser dchFrom;
+	private com.toedter.calendar.JDateChooser dchTo;
+	
 	private IDataStrategy ds;
 	private SpadTableModel model;
 	private ArrayList<SpadItem> data;
 
-	private com.toedter.calendar.JDateChooser dchFrom;
-	private com.toedter.calendar.JDateChooser dchTo;
-
 	public static final String[] columnNames = { "Name", "avPrice", "avVolume",
 			"dPriceMin", "dPriceMax", "dPriceAvg" };
+	private JTable table;
 
 	public MainGui(IDataStrategy ds) {
 		super();
@@ -104,6 +113,7 @@ public class MainGui {
 		menuBar.add(mnFile);
 
 		JMenuItem menu_download_man = new JMenuItem("Manually download");
+		menu_download_man.addActionListener(new ManualDownloader());
 		mnFile.add(menu_download_man);
 
 		JMenuItem mntmNewMenuItem = new JMenuItem("New menu item");
@@ -135,7 +145,7 @@ public class MainGui {
 		dchFrom = new JDateChooser();
 		dchTo = new JDateChooser();
 		Date today = new Date(Calendar.getInstance().getTimeInMillis());
-		dchFrom.setDate(today);
+		dchFrom.setDate(ds.getSpadFirstDate());
 		dchTo.setDate(today);
 		JLabel labelFilterFrom = new JLabel("From:");
 		JLabel labelFilterTo = new JLabel("To:");
@@ -145,11 +155,19 @@ public class MainGui {
 		data_filter.add(dchTo);
 		data_filter.add(btn_refresh);
 
+		JPanel data_table = new JPanel();
+		panel_data.add(data_table, BorderLayout.CENTER);
+		data_table.setLayout(new BorderLayout(0, 0));
+		
 		tableData = new JTable(model);
+		tableData.setShowVerticalLines(false);
+		tableData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		data_table.add(tableData, BorderLayout.CENTER);
+		
 		JTableHeader header = tableData.getTableHeader();
 		header.setBackground(Color.yellow);
-		panel_data.add(tableData, BorderLayout.CENTER);
-
+		data_table.add(header, BorderLayout.NORTH);
+		
 		JPanel data_info = new JPanel();
 		panel_data.add(data_info, BorderLayout.SOUTH);
 
@@ -161,6 +179,9 @@ public class MainGui {
 
 		JPanel panel_graph = new JPanel();
 		tabbedPane.addTab("Graph", null, panel_graph, null);
+		
+		label_status = new JLabel(" ");
+		frmSpadViewer.getContentPane().add(label_status, BorderLayout.SOUTH);
 	}
 
 	private class FilterListener implements ActionListener {
@@ -187,7 +208,10 @@ public class MainGui {
 				model = new SpadTableModel(MainGui.columnNames, data);
 				tableData.setModel(model);
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
+				JOptionPane.showMessageDialog(MainGui.this.frmSpadViewer,
+					    e1.getMessage(),
+					    "SQL EXCEPTION",
+					    JOptionPane.ERROR_MESSAGE);
 				e1.printStackTrace();
 			}
 		}
@@ -208,6 +232,16 @@ public class MainGui {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			AboutFrame.main(null);
+		}
+		
+	}
+	
+	private class ManualDownloader implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Thread t = new Thread(new Downloader(ds, new CsvParser(), Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH));
+			t.start();
 		}
 		
 	}
