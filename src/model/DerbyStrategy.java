@@ -15,7 +15,7 @@ import java.util.TreeMap;
 
 /**
  * @author MPI
- * @version 16.05.2014/1.10
+ * @version 24.05.2014/1.11
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -143,8 +143,12 @@ public class DerbyStrategy implements IDataStrategy {
 			endDate = this.getSpadLastDate();
 		}
 		/*
-		 * ssql structure 1 - company id 2 - avg price (open+close/2) 3 - avg
-		 * volume 4 - min price 5 - max price 6 - avg price (open+close/2)
+		 * ssql structure
+		 * 
+		 * select avPrice, avVolume, minPrice, maxPrice [, set dPriceAvg = 0]
+		 * 
+		 * 1 - company id 2 - avg price (open+close/2) 3 - avg volume 4 - min
+		 * price 5 - max price 6 - avg price (open+close/2)
 		 */
 		String ssql = String.format(
 				"SELECT %s, AVG((%s+%s)/2), AVG(%s), MIN(%s), "
@@ -172,14 +176,48 @@ public class DerbyStrategy implements IDataStrategy {
 				while (rs.next()) {
 					SpadItem a = new SpadItem(rs.getString(1), rs.getString(1),
 							rs.getDouble(2), rs.getLong(3), rs.getDouble(4),
-							rs.getDouble(5), rs.getDouble(6));
+							rs.getDouble(5), 0.0);
 					r.add(a);
 				}
 			}
 		}
+
 		/*
-		 * rsql structure - fetch newest data 1 - company id 2 - company name 3
-		 * - actual avg price (per day) 4 - date
+		 * asql structure
+		 * 
+		 * fetch avgPrice on all data in db data
+		 * 
+		 * 1 - company id, 2 - avg price
+		 */
+		String asql = String.format("SELECT %s,AVG((%s+%s)/2) "
+				+ "FROM %s GROUP BY %s", DerbyDatabase.DB_MAP_SPAD_TABLE + "."
+				+ Item.DB_MAP_NAME, DerbyDatabase.DB_MAP_SPAD_TABLE + "."
+				+ Item.DB_MAP_OPEN, DerbyDatabase.DB_MAP_SPAD_TABLE + "."
+				+ Item.DB_MAP_CLOSE, DerbyDatabase.DB_MAP_SPAD_TABLE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_NAME);
+
+		try (PreparedStatement sel = db.getConnection().prepareStatement(asql)) {
+			try (ResultSet rs = db.selectQuery(sel)) {
+				while (rs.next()) {
+					for (int i = 0; i < r.size(); i++) {
+						if (r.get(i).getCompanyId().equals(rs.getString(1))) {
+							r.get(i).setdPriceAvg(rs.getDouble(2));
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		/*
+		 * rsql structure
+		 * 
+		 * fetch newest data; modify
+		 * dPriceMin(actual-min),dPriceMax(actual-max), dPriceAvg(avg
+		 * price-actual)
+		 * 
+		 * 1 - company id, 2 - company name, 3- actual avg price (per day), 4 -
+		 * date
 		 */
 		String rsql = String.format("SELECT %s,%s,((%s+%s)/2),%s "
 				+ "FROM %s INNER JOIN %s ON %s=%s  "

@@ -12,6 +12,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import javax.swing.SwingUtilities;
+
+import sun.swing.SwingUtilities2;
 import view.MainGui;
 import model.IDataStrategy;
 import model.IParser;
@@ -19,7 +22,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.4
+ * @version 24.05.2014/1.5
  */
 public class Downloader implements Runnable {
 
@@ -62,17 +65,9 @@ public class Downloader implements Runnable {
 			// save parsed items to db
 			ds.insertItems(r);
 			// System.out.println("DW saved " + r.size() + " new items");
-			if (gui == null) {
-				System.out.println("Downloader finished.");
-			} else {
-				gui.setStatusLabel("Downloader finished.");
-			}
+			reportProgress("Downloader finished.");
 		} catch (IOException | SQLException e) {
-			if (gui == null) {
-				System.out.println(e.getStackTrace());
-			} else {
-				gui.setStatusLabel("Downloader error.");
-			}
+			reportProgress("Downloader error.");
 		}
 	}
 
@@ -93,6 +88,19 @@ public class Downloader implements Runnable {
 				bos.write(i);
 			}
 			bos.flush();
+		}
+	}
+
+	private void reportProgress(final String msg) {
+		if (gui == null) {
+			System.out.println(msg);
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					gui.setStatusLabel(msg);
+				}
+			});
 		}
 	}
 }
