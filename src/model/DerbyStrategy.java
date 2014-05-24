@@ -15,7 +15,7 @@ import java.util.TreeMap;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.11
+ * @version 24.05.2014/1.12
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -56,8 +56,8 @@ public class DerbyStrategy implements IDataStrategy {
 	}
 
 	@Override
-	public ArrayList<Item> getItems(Date startDate, Date endDate)
-			throws SQLException {
+	public ArrayList<Item> getItems(Date startDate, Date endDate,
+			String companyId) throws SQLException {
 		ArrayList<Item> r = new ArrayList<Item>();
 		if (startDate == null) {
 			startDate = this.getSpadFirstDate();
@@ -65,12 +65,20 @@ public class DerbyStrategy implements IDataStrategy {
 		if (endDate == null) {
 			endDate = this.getSpadLastDate();
 		}
-		String ssql = String.format("SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM %s",
+		if (companyId == null) {
+			companyId = "%";
+		}
+		String ssql = String.format("SELECT %s,%s,%s,%s,%s,%s,%s,%s FROM %s "
+				+ "WHERE (%s LIKE ? AND %s >= ? AND %s <= ?)",
 				Item.DB_MAP_ID, Item.DB_MAP_NAME, Item.DB_MAP_DATE,
 				Item.DB_MAP_OPEN, Item.DB_MAP_CLOSE, Item.DB_MAP_MAX,
 				Item.DB_MAP_MIN, Item.DB_MAP_VOLUME,
-				DerbyDatabase.DB_MAP_SPAD_TABLE);
+				DerbyDatabase.DB_MAP_SPAD_TABLE, Item.DB_MAP_NAME,
+				Item.DB_MAP_DATE, Item.DB_MAP_DATE);
 		try (PreparedStatement sel = db.getConnection().prepareStatement(ssql)) {
+			sel.setDate(2, startDate);
+			sel.setDate(3, endDate);
+			sel.setString(1, companyId);
 			try (ResultSet rs = db.selectQuery(sel)) {
 				while (rs.next()) {
 					Item a = new Item(rs.getInt(1), rs.getString(2),

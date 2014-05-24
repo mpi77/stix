@@ -10,18 +10,13 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import javax.swing.SwingConstants;
-import java.awt.GridLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import net.miginfocom.swing.MigLayout;
 
 /**
  * @author MPI
- * @version 23.05.2014/1.1
+ * @version 23.05.2014/1.2
  */
 public class AboutFrame extends JFrame {
 
@@ -70,16 +65,23 @@ public class AboutFrame extends JFrame {
 		
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.CENTER);
-		panel.setLayout(new MigLayout("", "[grow,center]", "[center][center][center][]"));
-		panel.setLayout(new MigLayout("", "[grow,center]", "[center][][][]"));
+		panel.setLayout(new MigLayout("", "[grow,center]", "[center][center][center][center][][][]"));
 		
 		JLabel lblNewLabel_1 = new JLabel("STIX is SPAD viewer released under BSD licence.");
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		panel.add(lblNewLabel_1, "cell 0 0,grow");
 		
-		JLabel lblNewLabel_2 = new JLabel("(c) 2014");
+		JLabel lblNewLabel_2 = new JLabel("Uses JFreeChart and Toedter JCalendar.");
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
-		panel.add(lblNewLabel_2, "cell 0 2,grow");
+		panel.add(lblNewLabel_2, "cell 0 1,grow");
+		
+		JLabel lblNewLabel_5 = new JLabel(" ");
+		lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblNewLabel_5, "cell 0 2,grow");
+		
+		JLabel lblNewLabel_6 = new JLabel("(c) 2014");
+		lblNewLabel_6.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblNewLabel_6, "cell 0 3,grow");
 		
 		JLabel lblNewLabel_3 = new JLabel("Contributors:");
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
@@ -88,5 +90,9 @@ public class AboutFrame extends JFrame {
 		JLabel lblNewLabel_4 = new JLabel("MPI <m2bures@gmail.com>");
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 		panel.add(lblNewLabel_4, "cell 0 5,grow");
+		
+		JLabel lblNewLabel_7 = new JLabel(" ");
+		lblNewLabel_7.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(lblNewLabel_7, "cell 0 6,grow");
 	}
 }

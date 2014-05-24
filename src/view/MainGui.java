@@ -19,11 +19,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 
-import model.Company;
 import model.CsvParser;
 import model.DerbyDatabase;
 import model.DerbyStrategy;
 import model.IDataStrategy;
+import model.Item;
 import model.SpadItem;
 
 import java.awt.event.ActionListener;
@@ -34,8 +34,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimerTask;
 
 import javax.swing.JLabel;
 
@@ -44,27 +44,20 @@ import com.toedter.calendar.JDateChooser;
 import core.Downloader;
 
 import javax.swing.ListSelectionModel;
-
-import java.awt.FlowLayout;
-
-import javax.swing.BoxLayout;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.category.DefaultCategoryDataset;
+
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.4
+ * @version 24.05.2014/1.5
  */
 public class MainGui {
 
@@ -94,6 +87,7 @@ public class MainGui {
 			initialize();
 			this.frmSpadViewer.setVisible(true);
 		} catch (SQLException e) {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -102,8 +96,8 @@ public class MainGui {
 	public void setStatusLabel(String text) {
 		label_status.setText(text);
 	}
-	
-	public void setLastDateLabel(String text){
+
+	public void setLastDateLabel(String text) {
 		label_last_date.setText(text);
 	}
 
@@ -118,6 +112,7 @@ public class MainGui {
 					ds = new DerbyStrategy(new DerbyDatabase());
 					MainGui window = new MainGui(ds);
 				} catch (Exception e) {
+					e.printStackTrace();
 					JOptionPane.showMessageDialog(null, e.getMessage(),
 							"Error", JOptionPane.ERROR_MESSAGE);
 				}
@@ -175,9 +170,7 @@ public class MainGui {
 		btn_refresh.addActionListener(new FilterListener());
 		dchFrom = new JDateChooser();
 		dchTo = new JDateChooser();
-		Date today = new Date(Calendar.getInstance().getTimeInMillis());
-		dchFrom.setDate(ds.getSpadFirstDate());
-		dchTo.setDate(today);
+		setDefaultFilter();
 		JLabel labelFilterFrom = new JLabel("From:");
 		JLabel labelFilterTo = new JLabel("To:");
 		data_filter.add(labelFilterFrom);
@@ -208,128 +201,116 @@ public class MainGui {
 		JLabel lblNewLabel = new JLabel("Last date in db:");
 		data_info.add(lblNewLabel);
 
-		label_last_date = new JLabel(ds.getSpadLastDate().toString());
+		Date dd = ds.getSpadLastDate();
+		label_last_date = new JLabel(((dd != null) ? ds.getSpadLastDate().toString() : ""));
 		data_info.add(label_last_date);
 
 		panel_graph = new JPanel();
 		tabbedPane.addTab("Graph", null, panel_graph, null);
 		tabbedPane.setEnabledAt(0, true);
 		tabbedPane.setEnabledAt(1, false);
-		
+
+		JPanel panel_adw = new JPanel();
+		tabbedPane.addTab("AutoDownloader", null, panel_adw, null);
+
 		label_status = new JLabel(" ");
 		frmSpadViewer.getContentPane().add(label_status, BorderLayout.SOUTH);
 	}
 
-	private XYDataset createDataset() {
-
-		final XYSeries series1 = new XYSeries("First");
-		series1.add(1.0, 1.0);
-		series1.add(2.0, 4.0);
-		series1.add(3.0, 3.0);
-		series1.add(4.0, 5.0);
-		series1.add(5.0, 5.0);
-		series1.add(6.0, 7.0);
-		series1.add(7.0, 7.0);
-		series1.add(8.0, 8.0);
-
-		final XYSeries series2 = new XYSeries("Second");
-		series2.add(1.0, 5.0);
-		series2.add(2.0, 7.0);
-		series2.add(3.0, 6.0);
-		series2.add(4.0, 8.0);
-		series2.add(5.0, 4.0);
-		series2.add(6.0, 4.0);
-		series2.add(7.0, 2.0);
-		series2.add(8.0, 1.0);
-
-		final XYSeries series3 = new XYSeries("Third");
-		series3.add(3.0, 4.0);
-		series3.add(4.0, 3.0);
-		series3.add(5.0, 2.0);
-		series3.add(6.0, 3.0);
-		series3.add(7.0, 6.0);
-		series3.add(8.0, 3.0);
-		series3.add(9.0, 4.0);
-		series3.add(10.0, 3.0);
-
-		final XYSeriesCollection dataset = new XYSeriesCollection();
-		dataset.addSeries(series1);
-		dataset.addSeries(series2);
-		dataset.addSeries(series3);
-
+	private DefaultCategoryDataset createDataset(ArrayList<Item> al) {
+		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		for(int i=0; i< al.size(); i++){
+			dataset.addValue((al.get(i).getOpen()+al.get(i).getClose())/2, "price", al.get(i).getDate().toString());
+		}
 		return dataset;
 	}
 
-	private JFreeChart createChart(final XYDataset dataset) {
-
-		// create the chart...
-		final JFreeChart chart = ChartFactory.createXYLineChart(
-				"Line Chart Demo 6", // chart title
-				"X", // x axis label
-				"Y", // y axis label
-				dataset, // data
-				PlotOrientation.VERTICAL, true, // include legend
-				true, // tooltips
-				false // urls
-				);
-		// NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
-		chart.setBackgroundPaint(Color.white);
-		// final StandardLegend legend = (StandardLegend) chart.getLegend();
-		// legend.setDisplaySeriesShapes(true);
-
-		// get a reference to the plot for further customisation...
-		final XYPlot plot = chart.getXYPlot();
-		plot.setBackgroundPaint(Color.lightGray);
-		// plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
-		plot.setDomainGridlinePaint(Color.white);
-		plot.setRangeGridlinePaint(Color.white);
-
-		final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-		renderer.setSeriesLinesVisible(0, false);
-		renderer.setSeriesShapesVisible(1, false);
-		plot.setRenderer(renderer);
-
-		// change the auto tick unit selection to integer units only...
-		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-		// OPTIONAL CUSTOMISATION COMPLETED.
+	private JFreeChart createChart(final DefaultCategoryDataset dataset) {
+		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
+		JFreeChart chart = ChartFactory
+				.createLineChart("Company chart (" + fromDate + " - " + toDate + ")", "Time", "Price",
+						dataset, PlotOrientation.VERTICAL, true,
+						true, false);
+		final CategoryPlot plot = chart.getCategoryPlot();
+        //ValueAxis range = plot.getRangeAxis();
+        //range.setVisible(false);
+        final CategoryAxis categoryAxis = (CategoryAxis) plot.getDomainAxis();
+        categoryAxis.setAxisLineVisible(true);
+        categoryAxis.setTickMarksVisible(false);
+        //categoryAxis.setVisible(false);
 
 		return chart;
+	}
 
+	private void makeChart(String companyId)  {
+		ArrayList<Item> al;
+		try {
+			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
+			final DefaultCategoryDataset dataset = createDataset(al);
+			final JFreeChart chart = createChart(dataset);
+			final ChartPanel chartPanel = new ChartPanel(chart);
+			//chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+			panel_graph.removeAll();
+			panel_graph.add(chartPanel);
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 	
-	private void makeChart(){
-		final XYDataset dataset = createDataset();
-        final JFreeChart chart = createChart(dataset);
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        //chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-        panel_graph.removeAll();
-        panel_graph.add(chartPanel);
+	private Date parseFromDate() {
+		java.sql.Date fromDate;
+		try {
+			SimpleDateFormat format = new SimpleDateFormat("d.M.yyyy");
+			java.util.Date parsedFrom = (java.util.Date) format
+					.parse(DateFormat.getDateInstance().format(
+							dchFrom.getDate()));
+			fromDate = new java.sql.Date(parsedFrom.getTime());
+		} catch (NullPointerException | ParseException ex) {
+			fromDate = null;
+		}
+		return fromDate;
+	}
+	
+	private Date parseToDate() {
+		java.sql.Date toDate;
+		try {
+			SimpleDateFormat format = new SimpleDateFormat("d.M.yyyy");
+			java.util.Date parsedFrom = (java.util.Date) format
+					.parse(DateFormat.getDateInstance().format(
+							dchTo.getDate()));
+			toDate = new java.sql.Date(parsedFrom.getTime());
+		} catch (NullPointerException | ParseException ex) {
+			toDate = null;
+		}
+		return toDate;
+	}
+	
+	public void refreshTable() throws SQLException{
+		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
+		data = ds.getSpadItems(fromDate, toDate);
+		model = new SpadTableModel(MainGui.columnNames, data);
+		tableData.setModel(model);
+	}
+	
+	public void setDefaultFilter() throws SQLException{
+		Date today = new Date(Calendar.getInstance().getTimeInMillis());
+		dchFrom.setDate(ds.getSpadFirstDate());
+		dchFrom.setMinSelectableDate(ds.getSpadFirstDate());
+		dchFrom.setMaxSelectableDate(today);
+		dchTo.setDate(today);
+		dchTo.setMinSelectableDate(ds.getSpadFirstDate());
+		dchTo.setMaxSelectableDate(today);
 	}
 
 	private class FilterListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			java.sql.Date fromDate, toDate;
+			
 			try {
-				SimpleDateFormat format = new SimpleDateFormat("d.M.yyyy");
-				java.util.Date parsedFrom = (java.util.Date) format
-						.parse(DateFormat.getDateInstance().format(
-								dchFrom.getDate()));
-				java.util.Date parsedTo = (java.util.Date) format
-						.parse(DateFormat.getDateInstance().format(
-								dchTo.getDate()));
-				fromDate = new java.sql.Date(parsedFrom.getTime());
-				toDate = new java.sql.Date(parsedTo.getTime());
-			} catch (ParseException ex) {
-				fromDate = null;
-				toDate = null;
-			}
-			try {
-				data = ds.getSpadItems(fromDate, toDate);
-				model = new SpadTableModel(MainGui.columnNames, data);
-				tableData.setModel(model);
+				refreshTable();
 			} catch (SQLException e1) {
 				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error",
 						JOptionPane.ERROR_MESSAGE);
@@ -364,29 +345,43 @@ public class MainGui {
 			int[] selectedRows = tableData.getSelectedRows();
 			if (selectedRows.length > 0) {
 				tabbedPane.setSelectedIndex(1);
-				System.out.println(data.get(selectedRows[0]));
 				tabbedPane.setEnabledAt(1, true);
-				makeChart();
+				makeChart(data.get(selectedRows[0]).getCompanyId());
 			}
 		}
 
 	}
-	
-	private class TabbedChangeListener implements ChangeListener{
+
+	private class TabbedChangeListener implements ChangeListener {
 
 		@Override
 		public void stateChanged(ChangeEvent e) {
-			if(tabbedPane.getComponentCount() > 1 && tabbedPane.getSelectedIndex() == 0){
+			if (tabbedPane.getComponentCount() > 1
+					&& (tabbedPane.getSelectedIndex() == 0 | tabbedPane
+							.getSelectedIndex() == 2)) {
 				tabbedPane.setEnabledAt(1, false);
 			}
 		}
-		
+
 	}
 
 	private class ManualDownloaderListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			Thread t = new Thread(new Downloader(ds, new CsvParser(),
+					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH,
+					MainGui.this));
+			t.start();
+			MainGui.this.setStatusLabel("Downloading...");
+		}
+
+	}
+
+	private class AutoDownloaderTask extends TimerTask {
+
+		@Override
+		public void run() {
 			Thread t = new Thread(new Downloader(ds, new CsvParser(),
 					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH,
 					MainGui.this));

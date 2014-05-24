@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 /**
  * @author MPI
- * @version 16.05.2014/1.8
+ * @version 24.05.2014/1.9
  */
 public interface IDataStrategy {
 	/**
@@ -57,10 +57,11 @@ public interface IDataStrategy {
 	 * 
 	 * @param startDate
 	 * @param endDate
+	 * @param companyId
 	 * @return ArrayList with Items
 	 * @throws SQLException
 	 */
-	public ArrayList<Item> getItems(Date startDate, Date endDate)
+	public ArrayList<Item> getItems(Date startDate, Date endDate, String companyId)
 			throws SQLException;
 
 	/**

@@ -14,7 +14,6 @@ import java.util.Calendar;
 
 import javax.swing.SwingUtilities;
 
-import sun.swing.SwingUtilities2;
 import view.MainGui;
 import model.IDataStrategy;
 import model.IParser;
@@ -22,7 +21,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.6
+ * @version 24.05.2014/1.7
  */
 public class Downloader implements Runnable {
 
@@ -66,8 +65,10 @@ public class Downloader implements Runnable {
 			ds.insertItems(r);
 			// System.out.println("DW saved " + r.size() + " new items");
 			updateLastDate();
+			updateTable();
 			reportProgress("Downloader finished.");
 		} catch (IOException | SQLException e) {
+			e.printStackTrace();
 			reportProgress("Downloader error.");
 		}
 	}
@@ -111,6 +112,20 @@ public class Downloader implements Runnable {
 			public void run() {
 				try {
 					gui.setLastDateLabel(ds.getSpadLastDate().toString());
+				} catch (SQLException e) {
+					reportProgress("Downloader error.");
+				}
+			}
+		});
+	}
+	
+	private void updateTable(){
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					gui.setDefaultFilter();
+					gui.refreshTable();
 				} catch (SQLException e) {
 					reportProgress("Downloader error.");
 				}
