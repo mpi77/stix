@@ -2,6 +2,7 @@ package view;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -18,6 +19,8 @@ import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import model.CsvParser;
 import model.DerbyDatabase;
@@ -34,6 +37,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimerTask;
 
@@ -44,6 +48,7 @@ import com.toedter.calendar.JDateChooser;
 import core.Downloader;
 
 import javax.swing.ListSelectionModel;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -57,7 +62,7 @@ import javax.swing.event.ChangeEvent;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.5
+ * @version 25.05.2014/1.7
  */
 public class MainGui {
 
@@ -189,6 +194,9 @@ public class MainGui {
 		ListSelectionModel ls = tableData.getSelectionModel();
 		ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		ls.addListSelectionListener(new SelectRowListener());
+		TableColumnModel tcm = tableData.getColumnModel();
+		TableColumn tm = tcm.getColumn(0);
+		tm.setCellRenderer(new RecommendedTableCellRenderer(null));
 		data_table.add(tableData, BorderLayout.CENTER);
 
 		JTableHeader header = tableData.getTableHeader();
@@ -202,7 +210,8 @@ public class MainGui {
 		data_info.add(lblNewLabel);
 
 		Date dd = ds.getSpadLastDate();
-		label_last_date = new JLabel(((dd != null) ? ds.getSpadLastDate().toString() : ""));
+		label_last_date = new JLabel(((dd != null) ? ds.getSpadLastDate()
+				.toString() : ""));
 		data_info.add(label_last_date);
 
 		panel_graph = new JPanel();
@@ -219,37 +228,37 @@ public class MainGui {
 
 	private DefaultCategoryDataset createDataset(ArrayList<Item> al) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		for(int i=0; i< al.size(); i++){
-			dataset.addValue((al.get(i).getOpen()+al.get(i).getClose())/2, "price", al.get(i).getDate().toString());
+		for (int i = 0; i < al.size(); i++) {
+			dataset.addValue((al.get(i).getOpen() + al.get(i).getClose()) / 2,
+					"price", al.get(i).getDate().toString());
 		}
 		return dataset;
 	}
 
-	private JFreeChart createChart(final DefaultCategoryDataset dataset) {
+	private JFreeChart createChart(final DefaultCategoryDataset dataset, String companyId) {
 		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
-		JFreeChart chart = ChartFactory
-				.createLineChart("Company chart (" + fromDate + " - " + toDate + ")", "Time", "Price",
-						dataset, PlotOrientation.VERTICAL, true,
-						true, false);
+		JFreeChart chart = ChartFactory.createLineChart(companyId + " ("
+				+ fromDate + " - " + toDate + ")", "Time", "Price", dataset,
+				PlotOrientation.VERTICAL, true, true, false);
 		final CategoryPlot plot = chart.getCategoryPlot();
-        //ValueAxis range = plot.getRangeAxis();
-        //range.setVisible(false);
-        final CategoryAxis categoryAxis = (CategoryAxis) plot.getDomainAxis();
-        categoryAxis.setAxisLineVisible(true);
-        categoryAxis.setTickMarksVisible(false);
-        //categoryAxis.setVisible(false);
+		// ValueAxis range = plot.getRangeAxis();
+		// range.setVisible(false);
+		final CategoryAxis categoryAxis = (CategoryAxis) plot.getDomainAxis();
+		categoryAxis.setAxisLineVisible(true);
+		categoryAxis.setTickMarksVisible(false);
+		// categoryAxis.setVisible(false);
 
 		return chart;
 	}
 
-	private void makeChart(String companyId)  {
+	private void makeChart(String companyId) {
 		ArrayList<Item> al;
 		try {
 			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
 			final DefaultCategoryDataset dataset = createDataset(al);
-			final JFreeChart chart = createChart(dataset);
+			final JFreeChart chart = createChart(dataset, companyId);
 			final ChartPanel chartPanel = new ChartPanel(chart);
-			//chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+			// chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
 			panel_graph.removeAll();
 			panel_graph.add(chartPanel);
 		} catch (SQLException e) {
@@ -258,7 +267,7 @@ public class MainGui {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private Date parseFromDate() {
 		java.sql.Date fromDate;
 		try {
@@ -272,29 +281,41 @@ public class MainGui {
 		}
 		return fromDate;
 	}
-	
+
 	private Date parseToDate() {
 		java.sql.Date toDate;
 		try {
 			SimpleDateFormat format = new SimpleDateFormat("d.M.yyyy");
 			java.util.Date parsedFrom = (java.util.Date) format
-					.parse(DateFormat.getDateInstance().format(
-							dchTo.getDate()));
+					.parse(DateFormat.getDateInstance().format(dchTo.getDate()));
 			toDate = new java.sql.Date(parsedFrom.getTime());
 		} catch (NullPointerException | ParseException ex) {
 			toDate = null;
 		}
 		return toDate;
 	}
-	
-	public void refreshTable() throws SQLException{
+
+	public void refreshTable() throws SQLException {
 		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
 		data = ds.getSpadItems(fromDate, toDate);
 		model = new SpadTableModel(MainGui.columnNames, data);
 		tableData.setModel(model);
+		String[] recom = ds.getPurchaseRecommendation();
+		ArrayList<Integer> rec = new ArrayList<Integer>();
+		for(int i = 0; i < data.size(); i++){
+			for(int j = 0; j < recom.length; j++){
+				if(data.get(i).getCompanyId().equals(recom[j])){
+					rec.add(i);
+					break;
+				}
+			}
+		}
+		TableColumnModel tcm = tableData.getColumnModel();
+		TableColumn tm = tcm.getColumn(0);
+		tm.setCellRenderer(new RecommendedTableCellRenderer(rec));
 	}
-	
-	public void setDefaultFilter() throws SQLException{
+
+	public void setDefaultFilter() throws SQLException {
 		Date today = new Date(Calendar.getInstance().getTimeInMillis());
 		dchFrom.setDate(ds.getSpadFirstDate());
 		dchFrom.setMinSelectableDate(ds.getSpadFirstDate());
@@ -308,7 +329,7 @@ public class MainGui {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			try {
 				refreshTable();
 			} catch (SQLException e1) {

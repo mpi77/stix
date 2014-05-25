@@ -15,7 +15,7 @@ import java.util.TreeMap;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.12
+ * @version 25.05.2014/1.13
  */
 public class DerbyStrategy implements IDataStrategy {
 
@@ -321,10 +321,12 @@ public class DerbyStrategy implements IDataStrategy {
 		int i = 0;
 		Set<Entry<String, Double>> set = sorted_map.entrySet();
 		Iterator<Entry<String, Double>> iterator = set.iterator();
+		Double lastValue = 0.0;
 		while (iterator.hasNext()) {
 			Entry<String, Double> me = iterator.next();
-			if (i < r.length) {
+			if (i < r.length && me.getValue()>=lastValue) {
 				r[i] = me.getKey();
+				lastValue = me.getValue();
 			}
 			i++;
 		}
