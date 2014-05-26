@@ -21,12 +21,14 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.7
+ * @version 26.05.2014/1.8
  */
 public class Downloader implements Runnable {
 
 	public static final String BCPP_REMOTE_URL = "http://euinvest.cz/generate/bcpp_data.csv";
 	public static final String BCPP_LOCAL_PATH = "bcpp_data.csv";
+	public static final int STATUS_SUCCES = 1;
+	public static final int STATUS_FAIL = 2;
 
 	private IDataStrategy ds;
 	private IParser ps;
@@ -66,9 +68,11 @@ public class Downloader implements Runnable {
 			// System.out.println("DW saved " + r.size() + " new items");
 			updateLastDate();
 			updateTable();
+			gui.checkDownloader(STATUS_SUCCES);
 			reportProgress("Downloader finished.");
-		} catch (IOException | SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			gui.checkDownloader(STATUS_FAIL);
 			reportProgress("Downloader error.");
 		}
 	}

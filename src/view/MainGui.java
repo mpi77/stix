@@ -60,13 +60,12 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.JTextField;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
 /**
  * @author MPI
- * @version 26.05.2014/1.8
+ * @version 26.05.2014/1.9
  */
 public class MainGui {
 
@@ -87,15 +86,15 @@ public class MainGui {
 	private IDataStrategy ds;
 	private SpadTableModel model;
 	private ArrayList<SpadItem> data;
-	private Timer adwTimer;
-	private int adwTicks;
+	private Timer adwTimer, adwShortFailTimer, adwLongFailTimer;
+	private int adwFailTicks;
 	
 	public static final String[] columnNames = { "Name", "avPrice", "avVolume",
 			"dPriceMin", "dPriceMax", "dPriceAvg" };
 	public static final int ADW_SHORT_PERIOD = 10*60*1000; // 10min in ms
 	public static final int ADW_LONG_PERIOD = 60*60*1000; // 1h in ms
-	public static final int ADW_DAY_PERIOD = 60*1000; // 24h in ms
-	public static final int ADW_TICKS_SHORT_PERIOD_MAX = 6; // max 6 ticks for short period
+	public static final int ADW_DAY_PERIOD = 24*60*60*1000; // 24h in ms
+	public static final int ADW_FAIL_TICKS_MAX = 6; // max 6 ticks for short period
 
 	public MainGui(IDataStrategy ds) {
 		super();
@@ -390,6 +389,43 @@ public class MainGui {
 		dchTo.setMinSelectableDate(ds.getSpadFirstDate());
 		dchTo.setMaxSelectableDate(today);
 	}
+	
+	public synchronized void checkDownloader(int status){
+		System.out.println("status = " + status + " | adwFailTicks = " + adwFailTicks);
+		if(status == 1){
+			adwFailTicks = 0;
+			if(adwShortFailTimer != null){
+				adwShortFailTimer.cancel();
+			}
+			if(adwLongFailTimer != null){
+				adwLongFailTimer.cancel();
+			}
+		} else {
+			adwFailTicks++;
+			if(adwFailTicks == 1){
+				// start short period timer
+				if(adwShortFailTimer != null){
+					adwShortFailTimer.cancel();
+				}
+				adwShortFailTimer = new Timer();
+				adwShortFailTimer.scheduleAtFixedRate(new AutoDownloaderTask(), 0, ADW_SHORT_PERIOD);
+			} else if(adwFailTicks > 1 && adwFailTicks < ADW_FAIL_TICKS_MAX){
+				// continue with short period timer
+			} else if(adwFailTicks == ADW_FAIL_TICKS_MAX){
+				// close short period timer, start long period timer
+				if(adwShortFailTimer != null){
+					adwShortFailTimer.cancel();
+				}
+				if(adwLongFailTimer != null){
+					adwLongFailTimer.cancel();
+				}
+				adwLongFailTimer = new Timer();
+				adwLongFailTimer.scheduleAtFixedRate(new AutoDownloaderTask(), 0, ADW_LONG_PERIOD);
+			} else {
+				// continue with long period timer
+			}
+		}
+	}
 
 	private class FilterListener implements ActionListener {
 
@@ -476,7 +512,12 @@ public class MainGui {
 					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH,
 					MainGui.this));
 			t.start();
-			MainGui.this.setStatusLabel("Downloading...");
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					MainGui.this.setStatusLabel("Downloading...");
+				}
+			});
 		}
 	}
 	
@@ -486,6 +527,8 @@ public class MainGui {
 		public void actionPerformed(ActionEvent e) {
 			btn_adw_start.setEnabled(false);
 			btn_adw_stop.setEnabled(true);
+			adw_hour.setEnabled(false);
+			adw_minute.setEnabled(false);
 			int sel_h = (int) adw_hour.getValue();
 			int sel_m = (int) adw_minute.getValue();
 			int sel_mm = (sel_h * 60) + sel_m;
@@ -518,6 +561,8 @@ public class MainGui {
 			}
 			btn_adw_start.setEnabled(true);
 			btn_adw_stop.setEnabled(false);
+			adw_hour.setEnabled(true);
+			adw_minute.setEnabled(true);
 		}
 	}
 
@@ -533,13 +578,16 @@ public class MainGui {
 
 		@Override
 		public void run() {
-			if(adwTicks < ADW_TICKS_SHORT_PERIOD_MAX){}
-			adwTicks++;
 			Thread t = new Thread(new Downloader(ds, new CsvParser(),
 					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH,
 					MainGui.this));
 			t.start();
-			MainGui.this.setStatusLabel("Downloading...");
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					MainGui.this.setStatusLabel("Downloading...");
+				}
+			});
 		}
 	}
 }
