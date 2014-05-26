@@ -39,6 +39,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JLabel;
@@ -59,6 +60,9 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JTextField;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 /**
  * @author MPI
@@ -75,13 +79,23 @@ public class MainGui {
 	private JPanel panel_graph;
 	private com.toedter.calendar.JDateChooser dchFrom;
 	private com.toedter.calendar.JDateChooser dchTo;
-
+	private JButton btn_adw_start;
+	private JButton btn_adw_stop;
+	private JSpinner adw_hour;
+	private JSpinner adw_minute;
+	
 	private IDataStrategy ds;
 	private SpadTableModel model;
 	private ArrayList<SpadItem> data;
-
+	private Timer adwTimer;
+	private int adwTicks;
+	
 	public static final String[] columnNames = { "Name", "avPrice", "avVolume",
 			"dPriceMin", "dPriceMax", "dPriceAvg" };
+	public static final int ADW_SHORT_PERIOD = 10*60*1000; // 10min in ms
+	public static final int ADW_LONG_PERIOD = 60*60*1000; // 1h in ms
+	public static final int ADW_DAY_PERIOD = 60*1000; // 24h in ms
+	public static final int ADW_TICKS_SHORT_PERIOD_MAX = 6; // max 6 ticks for short period
 
 	public MainGui(IDataStrategy ds) {
 		super();
@@ -89,6 +103,7 @@ public class MainGui {
 			this.ds = ds;
 			this.data = this.ds.getSpadItems(null, null);
 			this.model = new SpadTableModel(MainGui.columnNames, this.data);
+			this.adwTimer = new Timer();
 			initialize();
 			this.frmSpadViewer.setVisible(true);
 		} catch (SQLException e) {
@@ -148,8 +163,9 @@ public class MainGui {
 		menu_download_man.addActionListener(new ManualDownloaderListener());
 		mnFile.add(menu_download_man);
 
-		JMenuItem mntmNewMenuItem = new JMenuItem("New menu item");
-		mnFile.add(mntmNewMenuItem);
+		JMenuItem menu_download_auto = new JMenuItem("AutoDownloader");
+		menu_download_auto.addActionListener(new AutoDownloaderListener());
+		mnFile.add(menu_download_auto);
 
 		JMenuItem menu_exit = new JMenuItem("Exit");
 		menu_exit.addActionListener(new ExitListener());
@@ -196,9 +212,6 @@ public class MainGui {
 		ListSelectionModel ls = tableData.getSelectionModel();
 		ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		ls.addListSelectionListener(new SelectRowListener());
-		TableColumnModel tcm = tableData.getColumnModel();
-		TableColumn tm = tcm.getColumn(0);
-		tm.setCellRenderer(new RecommendedTableCellRenderer(null));
 		data_table.add(tableData, BorderLayout.CENTER);
 
 		JTableHeader header = tableData.getTableHeader();
@@ -223,6 +236,33 @@ public class MainGui {
 
 		JPanel panel_adw = new JPanel();
 		tabbedPane.addTab("AutoDownloader", null, panel_adw, null);
+		panel_adw.setLayout(new BorderLayout(0, 0));
+
+		JLabel lblNewLabel_1 = new JLabel("Select time to periodically actualisation of data");
+		panel_adw.add(lblNewLabel_1, BorderLayout.NORTH);
+
+		JPanel panel = new JPanel();
+		panel_adw.add(panel, BorderLayout.CENTER);
+
+		adw_hour = new JSpinner();
+		adw_hour.setModel(new SpinnerNumberModel(0, 0, 23, 1));
+		panel.add(adw_hour);
+
+		JLabel lblNewLabel_3 = new JLabel(":");
+		panel.add(lblNewLabel_3);
+
+		adw_minute = new JSpinner();
+		adw_minute.setModel(new SpinnerNumberModel(0, 0, 59, 1));
+		panel.add(adw_minute);
+
+		btn_adw_start = new JButton("Start");
+		btn_adw_start.addActionListener(new StartAutoDownloader());
+		panel.add(btn_adw_start);
+
+		btn_adw_stop = new JButton("Stop");
+		btn_adw_stop.setEnabled(false);
+		btn_adw_stop.addActionListener(new StopAutoDownloader());
+		panel.add(btn_adw_stop);
 
 		label_status = new JLabel(" ");
 		frmSpadViewer.getContentPane().add(label_status, BorderLayout.SOUTH);
@@ -357,7 +397,11 @@ public class MainGui {
 		public void actionPerformed(ActionEvent e) {
 
 			try {
+				frmSpadViewer.setCursor(Cursor
+						.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				refreshTable();
+				frmSpadViewer.setCursor(Cursor
+						.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			} catch (SQLException e1) {
 				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error",
 						JOptionPane.ERROR_MESSAGE);
@@ -390,41 +434,26 @@ public class MainGui {
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
 			selectedRows = tableData.getSelectedRows();
-			if (selectedRows.length > 0) {
-				frmSpadViewer.setCursor(Cursor
-						.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				Thread r = new Thread(new LoadChart(data.get(selectedRows[0]).getCompanyId()));
-				r.start();
+			if (selectedRows.length > 0 && e.getValueIsAdjusting()) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						frmSpadViewer.setCursor(Cursor
+								.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						ChartPanel chartPanel = makeChartPanel(data.get(
+								selectedRows[0]).getCompanyId());
+						if (panel_graph.getComponentCount() > 0) {
+							panel_graph.removeAll();
+						}
+						panel_graph.add(chartPanel, false);
+						tabbedPane.setSelectedIndex(1);
+						tabbedPane.setEnabledAt(1, true);
+						frmSpadViewer.setCursor(Cursor
+								.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					}
+				});
 			}
 		}
-	}
-
-	private class LoadChart implements Runnable {
-
-		String companyId;
-		ChartPanel chartPanel;
-
-		public LoadChart(String companyId) {
-			this.companyId = companyId;
-		}
-
-		@Override
-		public void run() {
-			chartPanel = makeChartPanel(companyId);
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					panel_graph.removeAll();
-					panel_graph.add(chartPanel);
-					tabbedPane.setSelectedIndex(1);
-					tabbedPane.setEnabledAt(1, true);
-					frmSpadViewer.setCursor(Cursor
-							.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				}
-			});
-
-		}
-
 	}
 
 	private class TabbedChangeListener implements ChangeListener {
@@ -450,11 +479,62 @@ public class MainGui {
 			MainGui.this.setStatusLabel("Downloading...");
 		}
 	}
+	
+	private class StartAutoDownloader implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			btn_adw_start.setEnabled(false);
+			btn_adw_stop.setEnabled(true);
+			int sel_h = (int) adw_hour.getValue();
+			int sel_m = (int) adw_minute.getValue();
+			int sel_mm = (sel_h * 60) + sel_m;
+			Calendar cal = Calendar.getInstance();
+			int now_h = cal.get(Calendar.HOUR_OF_DAY);
+	    	int now_m = cal.get(Calendar.MINUTE);
+	    	int now_mm = (now_h * 60) + now_m;
+	    	
+	    	long delay = 0;
+	    	if(sel_mm < now_mm){
+	    		delay = (1440 - now_mm + sel_mm) * 60 * 1000;
+	    	} else {
+	    		delay = (sel_mm - now_mm) * 60 * 1000;
+	    	}
+	    	
+			if(adwTimer != null){
+				adwTimer.cancel();
+				adwTimer = new Timer();
+				adwTimer.scheduleAtFixedRate(new AutoDownloaderTask(), delay, ADW_DAY_PERIOD);
+			}
+		}
+	}
+	
+	private class StopAutoDownloader implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(adwTimer != null){
+				adwTimer.cancel();
+			}
+			btn_adw_start.setEnabled(true);
+			btn_adw_stop.setEnabled(false);
+		}
+	}
+
+	private class AutoDownloaderListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			tabbedPane.setSelectedIndex(2);
+		}
+	}
 
 	private class AutoDownloaderTask extends TimerTask {
 
 		@Override
 		public void run() {
+			if(adwTicks < ADW_TICKS_SHORT_PERIOD_MAX){}
+			adwTicks++;
 			Thread t = new Thread(new Downloader(ds, new CsvParser(),
 					Downloader.BCPP_REMOTE_URL, Downloader.BCPP_LOCAL_PATH,
 					MainGui.this));
