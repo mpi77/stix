@@ -1,8 +1,8 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.EventQueue;
-import java.awt.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -10,6 +10,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 import java.awt.BorderLayout;
 
@@ -37,7 +38,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimerTask;
 
@@ -62,7 +62,7 @@ import javax.swing.event.ChangeEvent;
 
 /**
  * @author MPI
- * @version 25.05.2014/1.7
+ * @version 26.05.2014/1.8
  */
 public class MainGui {
 
@@ -135,6 +135,8 @@ public class MainGui {
 		frmSpadViewer.setTitle("SPAD viewer");
 		frmSpadViewer.setBounds(100, 100, 800, 600);
 		frmSpadViewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmSpadViewer.setCursor(Cursor
+				.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
 		JMenuBar menuBar = new JMenuBar();
 		frmSpadViewer.setJMenuBar(menuBar);
@@ -224,6 +226,8 @@ public class MainGui {
 
 		label_status = new JLabel(" ");
 		frmSpadViewer.getContentPane().add(label_status, BorderLayout.SOUTH);
+
+		refreshTable();
 	}
 
 	private DefaultCategoryDataset createDataset(ArrayList<Item> al) {
@@ -235,7 +239,8 @@ public class MainGui {
 		return dataset;
 	}
 
-	private JFreeChart createChart(final DefaultCategoryDataset dataset, String companyId) {
+	private JFreeChart createChart(final DefaultCategoryDataset dataset,
+			String companyId) {
 		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
 		JFreeChart chart = ChartFactory.createLineChart(companyId + " ("
 				+ fromDate + " - " + toDate + ")", "Time", "Price", dataset,
@@ -251,6 +256,9 @@ public class MainGui {
 		return chart;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	private void makeChart(String companyId) {
 		ArrayList<Item> al;
 		try {
@@ -266,6 +274,24 @@ public class MainGui {
 					JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
+	}
+
+	private ChartPanel makeChartPanel(String companyId) {
+		ArrayList<Item> al;
+		ChartPanel chartPanel = null;
+
+		try {
+			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
+			final DefaultCategoryDataset dataset = createDataset(al);
+			final JFreeChart chart = createChart(dataset, companyId);
+			chartPanel = new ChartPanel(chart);
+			// chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+		return chartPanel;
 	}
 
 	private Date parseFromDate() {
@@ -302,9 +328,9 @@ public class MainGui {
 		tableData.setModel(model);
 		String[] recom = ds.getPurchaseRecommendation();
 		ArrayList<Integer> rec = new ArrayList<Integer>();
-		for(int i = 0; i < data.size(); i++){
-			for(int j = 0; j < recom.length; j++){
-				if(data.get(i).getCompanyId().equals(recom[j])){
+		for (int i = 0; i < data.size(); i++) {
+			for (int j = 0; j < recom.length; j++) {
+				if (data.get(i).getCompanyId().equals(recom[j])) {
 					rec.add(i);
 					break;
 				}
@@ -338,7 +364,6 @@ public class MainGui {
 				e1.printStackTrace();
 			}
 		}
-
 	}
 
 	private class ExitListener implements ActionListener {
@@ -356,19 +381,48 @@ public class MainGui {
 		public void actionPerformed(ActionEvent e) {
 			AboutFrame.main(null);
 		}
-
 	}
 
 	private class SelectRowListener implements ListSelectionListener {
 
+		int[] selectedRows = new int[] { 0 };
+
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			int[] selectedRows = tableData.getSelectedRows();
+			selectedRows = tableData.getSelectedRows();
 			if (selectedRows.length > 0) {
-				tabbedPane.setSelectedIndex(1);
-				tabbedPane.setEnabledAt(1, true);
-				makeChart(data.get(selectedRows[0]).getCompanyId());
+				frmSpadViewer.setCursor(Cursor
+						.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				Thread r = new Thread(new LoadChart(data.get(selectedRows[0]).getCompanyId()));
+				r.start();
 			}
+		}
+	}
+
+	private class LoadChart implements Runnable {
+
+		String companyId;
+		ChartPanel chartPanel;
+
+		public LoadChart(String companyId) {
+			this.companyId = companyId;
+		}
+
+		@Override
+		public void run() {
+			chartPanel = makeChartPanel(companyId);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					panel_graph.removeAll();
+					panel_graph.add(chartPanel);
+					tabbedPane.setSelectedIndex(1);
+					tabbedPane.setEnabledAt(1, true);
+					frmSpadViewer.setCursor(Cursor
+							.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				}
+			});
+
 		}
 
 	}
@@ -383,7 +437,6 @@ public class MainGui {
 				tabbedPane.setEnabledAt(1, false);
 			}
 		}
-
 	}
 
 	private class ManualDownloaderListener implements ActionListener {
@@ -396,7 +449,6 @@ public class MainGui {
 			t.start();
 			MainGui.this.setStatusLabel("Downloading...");
 		}
-
 	}
 
 	private class AutoDownloaderTask extends TimerTask {
@@ -409,6 +461,5 @@ public class MainGui {
 			t.start();
 			MainGui.this.setStatusLabel("Downloading...");
 		}
-
 	}
 }
