@@ -237,7 +237,7 @@ public class MainGui {
 		tabbedPane.addTab("AutoDownloader", null, panel_adw, null);
 		panel_adw.setLayout(new BorderLayout(0, 0));
 
-		JLabel lblNewLabel_1 = new JLabel("Select time to periodically actualisation of data");
+		JLabel lblNewLabel_1 = new JLabel("Select time to periodical actualization. Data on remote server are published every working day at 20:15.");
 		panel_adw.add(lblNewLabel_1, BorderLayout.NORTH);
 
 		JPanel panel = new JPanel();
@@ -391,7 +391,6 @@ public class MainGui {
 	}
 	
 	public synchronized void checkDownloader(int status){
-		System.out.println("status = " + status + " | adwFailTicks = " + adwFailTicks);
 		if(status == 1){
 			adwFailTicks = 0;
 			if(adwShortFailTimer != null){
