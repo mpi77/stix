@@ -2,7 +2,9 @@ package view;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -57,15 +59,20 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.Year;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 
 /**
  * @author MPI
- * @version 27.05.2014/1.10
+ * @version 27.05.2014/1.11
  */
 public class MainGui {
 
@@ -147,7 +154,7 @@ public class MainGui {
 	 */
 	private void initialize() throws SQLException {
 		frmSpadViewer = new JFrame();
-		frmSpadViewer.setTitle("SPAD viewer");
+		frmSpadViewer.setTitle("STIX SPAD viewer");
 		frmSpadViewer.setBounds(100, 100, 800, 600);
 		frmSpadViewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSpadViewer.setCursor(Cursor
@@ -171,12 +178,12 @@ public class MainGui {
 		menu_exit.addActionListener(new ExitListener());
 		mnFile.add(menu_exit);
 
-		JMenu mnStix = new JMenu("Stix");
-		menuBar.add(mnStix);
+		JMenu mnHelp = new JMenu("Help");
+		menuBar.add(mnHelp);
 
 		JMenuItem menu_about = new JMenuItem("About");
 		menu_about.addActionListener(new AboutListener());
-		mnStix.add(menu_about);
+		mnHelp.add(menu_about);
 
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.addChangeListener(new TabbedChangeListener());
@@ -238,15 +245,26 @@ public class MainGui {
 		tabbedPane.addTab("AutoDownloader", null, panel_adw, null);
 		panel_adw.setLayout(new BorderLayout(0, 0));
 
+		JPanel panel_adw_head = new JPanel();
+		panel_adw_head.setLayout(new FlowLayout());
+		panel_adw.add(panel_adw_head, BorderLayout.NORTH);
+
 		JLabel lblNewLabel_1 = new JLabel(
 				"Select time to periodical actualization. Data on remote server are published every working day at 20:15.");
-		panel_adw.add(lblNewLabel_1, BorderLayout.NORTH);
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_1.setPreferredSize(new Dimension(760, 40));
+		panel_adw_head.add(lblNewLabel_1);
 
 		JPanel panel = new JPanel();
 		panel_adw.add(panel, BorderLayout.CENTER);
 
+		Calendar cal = Calendar.getInstance();
+		int now_h = cal.get(Calendar.HOUR_OF_DAY);
+		int now_m = cal.get(Calendar.MINUTE);
+
 		adw_hour = new JSpinner();
 		adw_hour.setModel(new SpinnerNumberModel(0, 0, 23, 1));
+		adw_hour.setValue(now_h);
 		panel.add(adw_hour);
 
 		JLabel lblNewLabel_3 = new JLabel(":");
@@ -254,6 +272,7 @@ public class MainGui {
 
 		adw_minute = new JSpinner();
 		adw_minute.setModel(new SpinnerNumberModel(0, 0, 59, 1));
+		adw_minute.setValue(now_m);
 		panel.add(adw_minute);
 
 		btn_adw_start = new JButton("Start");
@@ -271,6 +290,9 @@ public class MainGui {
 		refreshTable();
 	}
 
+	/**
+	 * @deprecated
+	 */
 	private DefaultCategoryDataset createDataset(ArrayList<Item> al,
 			Double longTermAvgPrice) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -285,6 +307,9 @@ public class MainGui {
 		return dataset;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	private JFreeChart createChart(final DefaultCategoryDataset dataset,
 			String companyId) {
 		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
@@ -322,6 +347,33 @@ public class MainGui {
 		}
 	}
 
+	private TimeSeriesCollection createDatasetTime(ArrayList<Item> al,
+			Double longTermAvgPrice) {
+		final TimeSeriesCollection dataset = new TimeSeriesCollection();
+
+		TimeSeries ts1 = new TimeSeries("avPrice");
+		for (int i = 0; i < al.size(); i++) {
+			ts1.addOrUpdate(new Day(al.get(i).getDate()),
+					(al.get(i).getOpen() + al.get(i).getClose()) / 2);
+		}
+		TimeSeries ts2 = new TimeSeries("longTermAvPrice");
+		for (int i = 0; i < al.size(); i++) {
+			ts2.addOrUpdate(new Day(al.get(i).getDate()), longTermAvgPrice);
+		}
+		dataset.addSeries(ts1);
+		dataset.addSeries(ts2);
+		return dataset;
+	}
+
+	private JFreeChart createChartTime(final TimeSeriesCollection dataset,
+			String companyId) {
+		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
+		JFreeChart chart = ChartFactory.createTimeSeriesChart(companyId + " ("
+				+ fromDate + " - " + toDate + ")", "Time [day]", "Price [CZK]",
+				dataset, true, true, false);
+		return chart;
+	}
+
 	private ChartPanel makeChartPanel(String companyId) {
 		ArrayList<Item> al;
 		ChartPanel chartPanel = null;
@@ -329,11 +381,10 @@ public class MainGui {
 		try {
 			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
 			longTermAvgPrice = ds.getLongTermAveragePrice(companyId);
-			final DefaultCategoryDataset dataset = createDataset(al,
+			final TimeSeriesCollection dataset = createDatasetTime(al,
 					longTermAvgPrice);
-			final JFreeChart chart = createChart(dataset, companyId);
+			final JFreeChart chart = createChartTime(dataset, companyId);
 			chartPanel = new ChartPanel(chart);
-			// chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
@@ -539,6 +590,7 @@ public class MainGui {
 			btn_adw_stop.setEnabled(true);
 			adw_hour.setEnabled(false);
 			adw_minute.setEnabled(false);
+			setStatusLabel(" ");
 			int sel_h = (int) adw_hour.getValue();
 			int sel_m = (int) adw_minute.getValue();
 			int sel_mm = (sel_h * 60) + sel_m;
@@ -560,6 +612,7 @@ public class MainGui {
 				adwTimer.scheduleAtFixedRate(new AutoDownloaderTask(), delay,
 						ADW_DAY_PERIOD);
 			}
+			// System.out.println(sel_mm + " " + now_mm + " <> " + delay);
 		}
 	}
 
@@ -574,6 +627,7 @@ public class MainGui {
 			btn_adw_stop.setEnabled(false);
 			adw_hour.setEnabled(true);
 			adw_minute.setEnabled(true);
+			setStatusLabel(" ");
 		}
 	}
 
