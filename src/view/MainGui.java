@@ -72,7 +72,7 @@ import javax.swing.SwingConstants;
 
 /**
  * @author MPI
- * @version 27.05.2014/1.12
+ * @version 28.05.2014/1.14
  */
 public class MainGui {
 
@@ -89,6 +89,7 @@ public class MainGui {
 	private JButton btn_adw_stop;
 	private JSpinner adw_hour;
 	private JSpinner adw_minute;
+	private JMenuItem menu_download_man;
 
 	private IDataStrategy ds;
 	private SpadTableModel model;
@@ -155,7 +156,7 @@ public class MainGui {
 	 */
 	private void initialize() throws SQLException {
 		frmSpadViewer = new JFrame();
-		frmSpadViewer.setTitle("STIX SPAD viewer");
+		frmSpadViewer.setTitle("STIX - SPAD viewer");
 		frmSpadViewer.setBounds(100, 100, 800, 600);
 		frmSpadViewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSpadViewer.setCursor(Cursor
@@ -167,7 +168,7 @@ public class MainGui {
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
 
-		JMenuItem menu_download_man = new JMenuItem("Manually download");
+		menu_download_man = new JMenuItem("Manually download");
 		menu_download_man.addActionListener(new ManualDownloaderListener());
 		mnFile.add(menu_download_man);
 
@@ -589,6 +590,8 @@ public class MainGui {
 		public void actionPerformed(ActionEvent e) {
 			btn_adw_start.setEnabled(false);
 			btn_adw_stop.setEnabled(true);
+			menu_download_man.setEnabled(false);
+			tabbedPane.setTitleAt(2, "* AutoDownloader");
 			adw_hour.setEnabled(false);
 			adw_minute.setEnabled(false);
 			setStatusLabel(" ");
@@ -626,6 +629,8 @@ public class MainGui {
 			}
 			btn_adw_start.setEnabled(true);
 			btn_adw_stop.setEnabled(false);
+			menu_download_man.setEnabled(true);
+			tabbedPane.setTitleAt(2, "AutoDownloader");
 			adw_hour.setEnabled(true);
 			adw_minute.setEnabled(true);
 			setStatusLabel(" ");
