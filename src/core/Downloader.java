@@ -33,7 +33,7 @@ public class Downloader implements Runnable {
 	public static final int STATUS_SUCCES = 1;
 	public static final int STATUS_FAIL = 2;
 	
-	private static Logger logger = Logger.getLogger("MainDriverLooger");
+	private static Logger logger = Logger.getLogger("DownloaderLooger");
 	
 	private IDataStrategy ds;
 	private IParser ps;

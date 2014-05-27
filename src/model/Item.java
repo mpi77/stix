@@ -6,7 +6,7 @@ import java.sql.Date;
  * Item (raw data from bcpp) POJO object.
  * 
  * @author MPI
- * @version 18.04.2014/1.1
+ * @version 27.05.2014/1.2
  */
 public class Item {
 
@@ -120,5 +120,20 @@ public class Item {
 		return "Item [id=" + id + ", name=" + name + ", date=" + date
 				+ ", open=" + open + ", close=" + close + ", max=" + max
 				+ ", min=" + min + ", volume=" + volume + "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean r = false;
+		if (obj instanceof Item){
+			Item item = (Item)obj;
+			r = (this.getId() == item.getId() && this.getName().equals(item.getName()) 
+					&& this.getOpen().doubleValue() == item.getOpen().doubleValue()
+					&& this.getClose().doubleValue() == item.getClose().doubleValue()
+					&& this.getMax().doubleValue() == item.getMax().doubleValue()
+					&& this.getMin().doubleValue() == item.getMin().doubleValue()
+					&& this.getVolume().longValue() == item.getVolume().longValue());
+		} 
+	    return r;
 	}
 }
