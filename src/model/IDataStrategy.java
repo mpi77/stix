@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 /**
  * @author MPI
- * @version 24.05.2014/1.4
+ * @version 27.05.2014/1.10
  */
 public interface IDataStrategy {
 	/**

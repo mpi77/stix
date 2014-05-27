@@ -22,7 +22,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 26.05.2014/1.8
+ * @version 27.05.2014/1.8
  */
 public class Downloader implements Runnable {
 

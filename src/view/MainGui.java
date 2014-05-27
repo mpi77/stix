@@ -65,7 +65,7 @@ import javax.swing.SpinnerNumberModel;
 
 /**
  * @author MPI
- * @version 26.05.2014/1.10
+ * @version 27.05.2014/1.10
  */
 public class MainGui {
 

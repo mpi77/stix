@@ -11,7 +11,7 @@ import java.util.Properties;
 
 /**
  * @author MPI
- * @version 06.06.2014/1.2
+ * @version 27.05.2014/1.3
  */
 public class DerbyDatabase {
 
@@ -157,46 +157,46 @@ public class DerbyDatabase {
 				Company.DB_MAP_NAME);
 		try (PreparedStatement s = conn.prepareStatement(sql)) {
 			s.setString(1, "ERBAG");
-			s.setString(2, "ERBAGi");
+			s.setString(2, "ERBAG");
 			s.execute();
 			s.setString(1, "VIG");
-			s.setString(2, "VIGi");
+			s.setString(2, "VIG");
 			s.execute();
 			s.setString(1, "CETV");
-			s.setString(2, "CETVi");
+			s.setString(2, "CETV");
 			s.execute();
 			s.setString(1, "TABAK");
-			s.setString(2, "TABAKi");
+			s.setString(2, "TABAK");
 			s.execute();
 			s.setString(1, "CEZ");
-			s.setString(2, "ČEZ");
+			s.setString(2, "CEZ");
 			s.execute();
 			s.setString(1, "KOMB");
-			s.setString(2, "KOMBi");
+			s.setString(2, "KOMB");
 			s.execute();
 			s.setString(1, "UNIPE");
-			s.setString(2, "UNIPEi");
+			s.setString(2, "UNIPE");
 			s.execute();
 			s.setString(1, "TELEC");
-			s.setString(2, "TELECi");
+			s.setString(2, "TELEC");
 			s.execute();
 			s.setString(1, "NWRUK");
-			s.setString(2, "NWRUKi");
+			s.setString(2, "NWRUK");
 			s.execute();
 			s.setString(1, "ORCO");
-			s.setString(2, "ORCOi");
+			s.setString(2, "ORCO");
 			s.execute();
 			s.setString(1, "PEGAS");
-			s.setString(2, "PEGASi");
+			s.setString(2, "PEGAS");
 			s.execute();
 			s.setString(1, "AAA");
-			s.setString(2, "AAAi");
+			s.setString(2, "AAA");
 			s.execute();
 			s.setString(1, "FOREG");
-			s.setString(2, "FOREGi");
+			s.setString(2, "FOREG");
 			s.execute();
 			s.setString(1, "TMR");
-			s.setString(2, "TMRi");
+			s.setString(2, "TMR");
 			s.execute();	
 			conn.commit();
 		}

@@ -15,7 +15,7 @@ import java.util.TreeMap;
 
 /**
  * @author MPI
- * @version 25.05.2014/1.14
+ * @version 27.05.2014/1.14
  */
 public class DerbyStrategy implements IDataStrategy {
 
