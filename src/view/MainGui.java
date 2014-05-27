@@ -269,11 +269,15 @@ public class MainGui {
 		refreshTable();
 	}
 
-	private DefaultCategoryDataset createDataset(ArrayList<Item> al) {
+	private DefaultCategoryDataset createDataset(ArrayList<Item> al, Double longTermAvgPrice) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		for (int i = 0; i < al.size(); i++) {
 			dataset.addValue((al.get(i).getOpen() + al.get(i).getClose()) / 2,
-					"price", al.get(i).getDate().toString());
+					"avPrice", al.get(i).getDate().toString());
+		}
+		for (int i = 0; i < al.size(); i++) {
+			dataset.addValue(longTermAvgPrice,
+					"longTermAvPrice", al.get(i).getDate().toString());
 		}
 		return dataset;
 	}
@@ -282,7 +286,7 @@ public class MainGui {
 			String companyId) {
 		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
 		JFreeChart chart = ChartFactory.createLineChart(companyId + " ("
-				+ fromDate + " - " + toDate + ")", "Time", "Price", dataset,
+				+ fromDate + " - " + toDate + ")", "Time [day]", "Price [CZK]", dataset,
 				PlotOrientation.VERTICAL, true, true, false);
 		final CategoryPlot plot = chart.getCategoryPlot();
 		// ValueAxis range = plot.getRangeAxis();
@@ -302,7 +306,7 @@ public class MainGui {
 		ArrayList<Item> al;
 		try {
 			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
-			final DefaultCategoryDataset dataset = createDataset(al);
+			final DefaultCategoryDataset dataset = createDataset(al, null);
 			final JFreeChart chart = createChart(dataset, companyId);
 			final ChartPanel chartPanel = new ChartPanel(chart);
 			// chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
@@ -318,10 +322,11 @@ public class MainGui {
 	private ChartPanel makeChartPanel(String companyId) {
 		ArrayList<Item> al;
 		ChartPanel chartPanel = null;
-
+		Double longTermAvgPrice;
 		try {
 			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
-			final DefaultCategoryDataset dataset = createDataset(al);
+			longTermAvgPrice = ds.getLongTermAveragePrice(companyId);
+			final DefaultCategoryDataset dataset = createDataset(al, longTermAvgPrice);
 			final JFreeChart chart = createChart(dataset, companyId);
 			chartPanel = new ChartPanel(chart);
 			// chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));

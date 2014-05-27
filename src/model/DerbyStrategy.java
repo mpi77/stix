@@ -365,4 +365,25 @@ public class DerbyStrategy implements IDataStrategy {
 		}
 		return r;
 	}
+
+	@Override
+	public Double getLongTermAveragePrice(String companyId) throws SQLException {
+		HashMap<String, Double> map = new HashMap<String, Double>();
+		String asql = String.format("SELECT %s,AVG((%s+%s)/2) "
+				+ "FROM %s GROUP BY %s", 
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "."+ Item.DB_MAP_NAME, 
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "."+ Item.DB_MAP_OPEN, 
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "."+ Item.DB_MAP_CLOSE, 
+				DerbyDatabase.DB_MAP_SPAD_TABLE,
+				DerbyDatabase.DB_MAP_SPAD_TABLE + "." + Item.DB_MAP_NAME);
+
+		try (PreparedStatement sel = db.getConnection().prepareStatement(asql)) {
+			try (ResultSet rs = db.selectQuery(sel)) {
+				while (rs.next()) {
+					map.put(rs.getString(1), rs.getDouble(2));
+				}
+			}
+		}
+		return map.get(companyId);
+	}
 }

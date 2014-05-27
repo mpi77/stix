@@ -53,6 +53,15 @@ public interface IDataStrategy {
 	public ArrayList<Company> getCompanies() throws SQLException;
 	
 	/**
+	 * Get long-term average price for given company.
+	 * 
+	 * @param companyId
+	 * @return Double
+	 * @throws SQLException
+	 */
+	public Double getLongTermAveragePrice(String companyId) throws SQLException;
+	
+	/**
 	 * Get items (raw item data) from SPAD in given date interval.
 	 * 
 	 * @param startDate
