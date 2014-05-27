@@ -15,6 +15,8 @@ import java.util.Calendar;
 
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.Logger;
+
 import view.MainGui;
 import model.IDataStrategy;
 import model.IParser;
@@ -22,7 +24,7 @@ import model.Item;
 
 /**
  * @author MPI
- * @version 27.05.2014/1.8
+ * @version 27.05.2014/1.9
  */
 public class Downloader implements Runnable {
 
@@ -30,7 +32,9 @@ public class Downloader implements Runnable {
 	public static final String BCPP_LOCAL_PATH = "bcpp_data.csv";
 	public static final int STATUS_SUCCES = 1;
 	public static final int STATUS_FAIL = 2;
-
+	
+	private static Logger logger = Logger.getLogger("MainDriverLooger");
+	
 	private IDataStrategy ds;
 	private IParser ps;
 	private String remoteFile;
@@ -72,7 +76,7 @@ public class Downloader implements Runnable {
 			gui.checkDownloader(STATUS_SUCCES);
 			reportProgress("Downloader finished.");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("DW:Exception occured:", e);
 			gui.checkDownloader(STATUS_FAIL);
 			reportProgress("Downloader error.");
 		}

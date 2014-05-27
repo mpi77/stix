@@ -52,6 +52,7 @@ import core.Downloader;
 
 import javax.swing.ListSelectionModel;
 
+import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -62,7 +63,6 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.time.Year;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -72,7 +72,7 @@ import javax.swing.SwingConstants;
 
 /**
  * @author MPI
- * @version 27.05.2014/1.11
+ * @version 27.05.2014/1.12
  */
 public class MainGui {
 
@@ -103,6 +103,7 @@ public class MainGui {
 	public static final int ADW_DAY_PERIOD = 24 * 60 * 60 * 1000; // 24h in ms
 	public static final int ADW_FAIL_TICKS_MAX = 6; // max 6 ticks for short
 													// period
+	private static Logger logger = Logger.getLogger("MainGuiLooger");
 
 	public MainGui(IDataStrategy ds) {
 		super();
@@ -114,7 +115,7 @@ public class MainGui {
 			initialize();
 			this.frmSpadViewer.setVisible(true);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("MG:Exception occured:", e);
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -139,7 +140,7 @@ public class MainGui {
 					ds = new DerbyStrategy(new DerbyDatabase());
 					MainGui window = new MainGui(ds);
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("MG:Exception occured:", e);
 					JOptionPane.showMessageDialog(null, e.getMessage(),
 							"Error", JOptionPane.ERROR_MESSAGE);
 				}
@@ -341,9 +342,9 @@ public class MainGui {
 			panel_graph.removeAll();
 			panel_graph.add(chartPanel);
 		} catch (SQLException e) {
+			logger.error("MG:Exception occured:", e);
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
 		}
 	}
 
@@ -386,9 +387,9 @@ public class MainGui {
 			final JFreeChart chart = createChartTime(dataset, companyId);
 			chartPanel = new ChartPanel(chart);
 		} catch (SQLException e) {
+			logger.error("MG:Exception occured:", e);
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
 		}
 		return chartPanel;
 	}
@@ -500,9 +501,9 @@ public class MainGui {
 				frmSpadViewer.setCursor(Cursor
 						.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			} catch (SQLException e1) {
+				logger.error("MG:Exception occured:", e1);
 				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error",
 						JOptionPane.ERROR_MESSAGE);
-				e1.printStackTrace();
 			}
 		}
 	}

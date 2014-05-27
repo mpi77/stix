@@ -7,3 +7,5 @@ bcpp_data.csv
 !.gitignore
 /stix_cd.ucls
 /STIXDB
+/logs
+/logs/*
