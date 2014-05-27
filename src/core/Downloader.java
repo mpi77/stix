@@ -9,6 +9,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -109,21 +110,23 @@ public class Downloader implements Runnable {
 			});
 		}
 	}
-	
-	private void updateLastDate(){
+
+	private void updateLastDate() {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					gui.setLastDateLabel(ds.getSpadLastDate().toString());
-				} catch (SQLException e) {
+					gui.setLastDateLabel(new SimpleDateFormat("dd.MM.yyyy")
+							.format(ds.getSpadLastDate()));
+				} catch (NullPointerException | IllegalArgumentException
+						| SQLException e) {
 					reportProgress("Downloader error.");
 				}
 			}
 		});
 	}
-	
-	private void updateTable(){
+
+	private void updateTable() {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {

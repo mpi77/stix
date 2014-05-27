@@ -65,7 +65,7 @@ import javax.swing.SpinnerNumberModel;
 
 /**
  * @author MPI
- * @version 26.05.2014/1.9
+ * @version 26.05.2014/1.10
  */
 public class MainGui {
 
@@ -82,19 +82,20 @@ public class MainGui {
 	private JButton btn_adw_stop;
 	private JSpinner adw_hour;
 	private JSpinner adw_minute;
-	
+
 	private IDataStrategy ds;
 	private SpadTableModel model;
 	private ArrayList<SpadItem> data;
 	private Timer adwTimer, adwShortFailTimer, adwLongFailTimer;
 	private int adwFailTicks;
-	
+
 	public static final String[] columnNames = { "Name", "avPrice", "avVolume",
 			"dPriceMin", "dPriceMax", "dPriceAvg" };
-	public static final int ADW_SHORT_PERIOD = 10*60*1000; // 10min in ms
-	public static final int ADW_LONG_PERIOD = 60*60*1000; // 1h in ms
-	public static final int ADW_DAY_PERIOD = 24*60*60*1000; // 24h in ms
-	public static final int ADW_FAIL_TICKS_MAX = 6; // max 6 ticks for short period
+	public static final int ADW_SHORT_PERIOD = 10 * 60 * 1000; // 10min in ms
+	public static final int ADW_LONG_PERIOD = 60 * 60 * 1000; // 1h in ms
+	public static final int ADW_DAY_PERIOD = 24 * 60 * 60 * 1000; // 24h in ms
+	public static final int ADW_FAIL_TICKS_MAX = 6; // max 6 ticks for short
+													// period
 
 	public MainGui(IDataStrategy ds) {
 		super();
@@ -224,8 +225,8 @@ public class MainGui {
 		data_info.add(lblNewLabel);
 
 		Date dd = ds.getSpadLastDate();
-		label_last_date = new JLabel(((dd != null) ? ds.getSpadLastDate()
-				.toString() : ""));
+		label_last_date = new JLabel(((dd != null) ? new SimpleDateFormat(
+				"dd.MM.yyyy").format(ds.getSpadLastDate()) : ""));
 		data_info.add(label_last_date);
 
 		panel_graph = new JPanel();
@@ -237,7 +238,8 @@ public class MainGui {
 		tabbedPane.addTab("AutoDownloader", null, panel_adw, null);
 		panel_adw.setLayout(new BorderLayout(0, 0));
 
-		JLabel lblNewLabel_1 = new JLabel("Select time to periodical actualization. Data on remote server are published every working day at 20:15.");
+		JLabel lblNewLabel_1 = new JLabel(
+				"Select time to periodical actualization. Data on remote server are published every working day at 20:15.");
 		panel_adw.add(lblNewLabel_1, BorderLayout.NORTH);
 
 		JPanel panel = new JPanel();
@@ -269,15 +271,16 @@ public class MainGui {
 		refreshTable();
 	}
 
-	private DefaultCategoryDataset createDataset(ArrayList<Item> al, Double longTermAvgPrice) {
+	private DefaultCategoryDataset createDataset(ArrayList<Item> al,
+			Double longTermAvgPrice) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		for (int i = 0; i < al.size(); i++) {
 			dataset.addValue((al.get(i).getOpen() + al.get(i).getClose()) / 2,
 					"avPrice", al.get(i).getDate().toString());
 		}
 		for (int i = 0; i < al.size(); i++) {
-			dataset.addValue(longTermAvgPrice,
-					"longTermAvPrice", al.get(i).getDate().toString());
+			dataset.addValue(longTermAvgPrice, "longTermAvPrice", al.get(i)
+					.getDate().toString());
 		}
 		return dataset;
 	}
@@ -286,8 +289,8 @@ public class MainGui {
 			String companyId) {
 		java.sql.Date fromDate = parseFromDate(), toDate = parseToDate();
 		JFreeChart chart = ChartFactory.createLineChart(companyId + " ("
-				+ fromDate + " - " + toDate + ")", "Time [day]", "Price [CZK]", dataset,
-				PlotOrientation.VERTICAL, true, true, false);
+				+ fromDate + " - " + toDate + ")", "Time [day]", "Price [CZK]",
+				dataset, PlotOrientation.VERTICAL, true, true, false);
 		final CategoryPlot plot = chart.getCategoryPlot();
 		// ValueAxis range = plot.getRangeAxis();
 		// range.setVisible(false);
@@ -326,7 +329,8 @@ public class MainGui {
 		try {
 			al = ds.getItems(parseFromDate(), parseToDate(), companyId);
 			longTermAvgPrice = ds.getLongTermAveragePrice(companyId);
-			final DefaultCategoryDataset dataset = createDataset(al, longTermAvgPrice);
+			final DefaultCategoryDataset dataset = createDataset(al,
+					longTermAvgPrice);
 			final JFreeChart chart = createChart(dataset, companyId);
 			chartPanel = new ChartPanel(chart);
 			// chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
@@ -394,37 +398,39 @@ public class MainGui {
 		dchTo.setMinSelectableDate(ds.getSpadFirstDate());
 		dchTo.setMaxSelectableDate(today);
 	}
-	
-	public synchronized void checkDownloader(int status){
-		if(status == 1){
+
+	public synchronized void checkDownloader(int status) {
+		if (status == 1) {
 			adwFailTicks = 0;
-			if(adwShortFailTimer != null){
+			if (adwShortFailTimer != null) {
 				adwShortFailTimer.cancel();
 			}
-			if(adwLongFailTimer != null){
+			if (adwLongFailTimer != null) {
 				adwLongFailTimer.cancel();
 			}
 		} else {
 			adwFailTicks++;
-			if(adwFailTicks == 1){
+			if (adwFailTicks == 1) {
 				// start short period timer
-				if(adwShortFailTimer != null){
+				if (adwShortFailTimer != null) {
 					adwShortFailTimer.cancel();
 				}
 				adwShortFailTimer = new Timer();
-				adwShortFailTimer.scheduleAtFixedRate(new AutoDownloaderTask(), 0, ADW_SHORT_PERIOD);
-			} else if(adwFailTicks > 1 && adwFailTicks < ADW_FAIL_TICKS_MAX){
+				adwShortFailTimer.scheduleAtFixedRate(new AutoDownloaderTask(),
+						0, ADW_SHORT_PERIOD);
+			} else if (adwFailTicks > 1 && adwFailTicks < ADW_FAIL_TICKS_MAX) {
 				// continue with short period timer
-			} else if(adwFailTicks == ADW_FAIL_TICKS_MAX){
+			} else if (adwFailTicks == ADW_FAIL_TICKS_MAX) {
 				// close short period timer, start long period timer
-				if(adwShortFailTimer != null){
+				if (adwShortFailTimer != null) {
 					adwShortFailTimer.cancel();
 				}
-				if(adwLongFailTimer != null){
+				if (adwLongFailTimer != null) {
 					adwLongFailTimer.cancel();
 				}
 				adwLongFailTimer = new Timer();
-				adwLongFailTimer.scheduleAtFixedRate(new AutoDownloaderTask(), 0, ADW_LONG_PERIOD);
+				adwLongFailTimer.scheduleAtFixedRate(new AutoDownloaderTask(),
+						0, ADW_LONG_PERIOD);
 			} else {
 				// continue with long period timer
 			}
@@ -524,8 +530,8 @@ public class MainGui {
 			});
 		}
 	}
-	
-	private class StartAutoDownloader implements ActionListener{
+
+	private class StartAutoDownloader implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -538,29 +544,30 @@ public class MainGui {
 			int sel_mm = (sel_h * 60) + sel_m;
 			Calendar cal = Calendar.getInstance();
 			int now_h = cal.get(Calendar.HOUR_OF_DAY);
-	    	int now_m = cal.get(Calendar.MINUTE);
-	    	int now_mm = (now_h * 60) + now_m;
-	    	
-	    	long delay = 0;
-	    	if(sel_mm < now_mm){
-	    		delay = (1440 - now_mm + sel_mm) * 60 * 1000;
-	    	} else {
-	    		delay = (sel_mm - now_mm) * 60 * 1000;
-	    	}
-	    	
-			if(adwTimer != null){
+			int now_m = cal.get(Calendar.MINUTE);
+			int now_mm = (now_h * 60) + now_m;
+
+			long delay = 0;
+			if (sel_mm < now_mm) {
+				delay = (1440 - now_mm + sel_mm) * 60 * 1000;
+			} else {
+				delay = (sel_mm - now_mm) * 60 * 1000;
+			}
+
+			if (adwTimer != null) {
 				adwTimer.cancel();
 				adwTimer = new Timer();
-				adwTimer.scheduleAtFixedRate(new AutoDownloaderTask(), delay, ADW_DAY_PERIOD);
+				adwTimer.scheduleAtFixedRate(new AutoDownloaderTask(), delay,
+						ADW_DAY_PERIOD);
 			}
 		}
 	}
-	
-	private class StopAutoDownloader implements ActionListener{
+
+	private class StopAutoDownloader implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if(adwTimer != null){
+			if (adwTimer != null) {
 				adwTimer.cancel();
 			}
 			btn_adw_start.setEnabled(true);
