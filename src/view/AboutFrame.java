@@ -16,7 +16,7 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * @author MPI
- * @version 23.05.2014/1.2
+ * @version 28.05.2014/1.3
  */
 public class AboutFrame extends JFrame {
 
@@ -71,7 +71,7 @@ public class AboutFrame extends JFrame {
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		panel.add(lblNewLabel_1, "cell 0 0,grow");
 		
-		JLabel lblNewLabel_2 = new JLabel("Uses JFreeChart and Toedter JCalendar.");
+		JLabel lblNewLabel_2 = new JLabel("Uses JFreeChart, Toedter JCalendar and Log4j.");
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
 		panel.add(lblNewLabel_2, "cell 0 1,grow");
 		

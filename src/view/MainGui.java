@@ -72,7 +72,7 @@ import javax.swing.SwingConstants;
 
 /**
  * @author MPI
- * @version 28.05.2014/1.14
+ * @version 28.05.2014/1.15
  */
 public class MainGui {
 
@@ -453,7 +453,7 @@ public class MainGui {
 	}
 
 	public synchronized void checkDownloader(int status) {
-		if (status == 1) {
+		if (status == Downloader.STATUS_SUCCES) {
 			adwFailTicks = 0;
 			if (adwShortFailTimer != null) {
 				adwShortFailTimer.cancel();
